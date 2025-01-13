@@ -1,6 +1,7 @@
 # Standard library imports
 import argparse
 import asyncio
+from enum import Enum
 import json
 import logging
 import sys
@@ -10,8 +11,6 @@ from typing import (
     Optional,
     Dict,
     Any,
-    Literal,
-    Final,
     cast,
 )
 
@@ -42,17 +41,16 @@ from langchain_mcp_tools import (
 
 # Type definitions
 ConfigType = Dict[str, Any]
-ColorType = Literal[  # ANSI color escape codes
-    '\x1b[33m',  # color to yellow
-    '\x1b[36m',  # color to cyan
-    '\x1b[0m'    # reset color
-]
 
 
-class Colors:  # color constants
-    YELLOW: Final[ColorType] = '\x1b[33m'
-    CYAN: Final[ColorType] = '\x1b[36m'
-    RESET: Final[ColorType] = '\x1b[0m'
+# ANSI color escape codes
+class Colors(str, Enum):
+    YELLOW = '\033[33m'  # color to yellow
+    CYAN = '\033[36m'    # color to cyan
+    RESET = '\033[0m'    # reset color
+
+    def __str__(self):
+        return self.value
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -85,12 +83,12 @@ def init_logger(verbose: bool) -> logging.Logger:
     return logging.getLogger()
 
 
-def print_colored(text: str, color: ColorType, end: str = "\n") -> None:
+def print_colored(text: str, color: Colors, end: str = "\n") -> None:
     """Print text in specified color and reset afterwards."""
     print(f"{color}{text}{Colors.RESET}", end=end)
 
 
-def set_color(color: ColorType) -> None:
+def set_color(color: Colors) -> None:
     """Set terminal color."""
     print(color, end='')
 
