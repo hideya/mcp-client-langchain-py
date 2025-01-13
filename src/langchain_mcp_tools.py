@@ -29,6 +29,61 @@ except ImportError as e:
     sys.exit(1)
 
 
+"""
+Resource Management Pattern for Parallel Server Initialization
+--------------------------------------------------------------
+This code implements a specific pattern for managing async resources that
+require context managers while enabling parallel initialization.
+The key aspects are:
+
+1. Core Challenge:
+   - Managing async resources (stdio_client and ClientSession) that seems to
+     rely exclusively on asynccontextmanager for cleanup with no manual cleanup
+     options (based on the mcp python-sdk impl as of Jan/15/2025)
+   - Initializing multiple servers in parallel
+   - Keeping sessions alive for later use
+   - Ensuring proper cleanup in the same task that created them
+
+2. Solution Strategy:
+   A key requirement for parallel initialization is that each server must be
+   initialized in its own dedicated task - there's no way around this if we
+   want true parallel initialization. However, this creates a challenge since
+   we also need to maintain long-lived sessions and handle cleanup properly.
+
+   The key insight is to keep the initialization tasks alive throughout the
+   session lifetime, rather than letting them complete after initialization.
+   By using events for coordination, we can:
+   - Allow parallel initialization while maintaining proper context management
+   - Keep each initialization task running until explicit cleanup is requested
+   - Ensure cleanup occurs in the same task that created the resources
+   - Provide a clean interface for the caller to manage the lifecycle
+
+   Alternative Considered:
+   A generator/coroutine approach using 'finally' block for cleanup was
+   considered but rejected because:
+   - The 'finally' block in a generator/coroutine can be executed by a
+     different task than the one that ran the main body of the code
+   - This breaks the requirement that AsyncExitStack.aclose() must be
+     called from the same task that created the context
+
+3. Task Lifecycle:
+   To allow the initialization task to stay alive waiting for cleanup:
+   [Task starts]
+     ↓
+   Initialize server & convert tools
+     ↓
+   Set ready_event (signals tools are ready)
+     ↓
+   await cleanup_event.wait() (keeps task alive)
+     ↓
+   When cleanup_event is set:
+   exit_stack.aclose() (cleanup in original task)
+
+This pattern enables parallel initialization while maintaining proper async
+resource lifecycle management through context managers.
+"""
+
+
 async def convert_single_mcp_to_langchain_tools(
     server_name: str,
     server_config: Dict[str, Any],
@@ -136,7 +191,7 @@ async def convert_single_mcp_to_langchain_tools(
         for tool in langchain_tools:
             logger.info(f'- {tool.name}')
     except Exception as e:
-        logger.info(f'Error getting response: {str(e)}')
+        logger.error(f'Error getting response: {str(e)}')
         raise
 
     ready_event.set()
