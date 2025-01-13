@@ -3,15 +3,15 @@ import argparse
 import asyncio
 import json
 import logging
-import os
 import sys
 from pathlib import Path
 from typing import (
-    Any,
-    Dict,
     List,
-    NoReturn,
     Optional,
+    Dict,
+    Any,
+    Literal,
+    Final,
     cast,
 )
 
@@ -25,7 +25,7 @@ try:
         HumanMessage,
         SystemMessage,
     )
-    from langchain_core.language_models.chat_models import BaseChatModel
+    from langchain_core.runnables.base import Runnable
     from langchain_core.messages.tool import ToolMessage
     from langgraph.prebuilt import create_react_agent
 except ImportError as e:
@@ -35,62 +35,28 @@ except ImportError as e:
 
 # Local application imports
 from config_loader import load_config
-from langchain_mcp_tools import convert_mcp_to_langchain_tools
+from langchain_mcp_tools import (
+    convert_mcp_to_langchain_tools,
+    McpServerCleanupFn,
+)
+
+# Type definitions
+ConfigType = Dict[str, Any]
+ColorType = Literal[  # ANSI color escape codes
+    '\x1b[33m',  # color to yellow
+    '\x1b[36m',  # color to cyan
+    '\x1b[0m'    # reset color
+]
 
 
-class Colors:  # ANSI color constants
-    YELLOW = '\x1b[33m'
-    CYAN = '\x1b[36m'
-    RESET = '\x1b[0m'
+class Colors:  # color constants
+    YELLOW: Final[ColorType] = '\x1b[33m'
+    CYAN: Final[ColorType] = '\x1b[36m'
+    RESET: Final[ColorType] = '\x1b[0m'
 
 
-def print_colored(text: str, color: str, end: str = "\n") -> None:
-    """Print text in specified color and reset afterwards."""
-    print(f"{color}{text}{Colors.RESET}", end=end)
-
-
-def set_color(color: str) -> None:
-    """Set terminal color."""
-    print(color, end='')
-
-
-def clear_line() -> None:
-    """Move up one line and clear it."""
-    print('\x1b[1A\x1b[2K', end='')
-
-
-def exit_with_error(message: str) -> NoReturn:
-    """Exit the program with an error message.
-
-    Args:
-        message: Error message to display before exiting
-    """
-    logger = logging.getLogger()
-    logger.error(f'Error: {message}')
-    sys.exit(1)
-
-
-async def run() -> None:
-    """Main function to run the chat application.
-
-    Loads environment variables, initializes chat model and tools,
-    and runs the main chat loop.
-
-    Environment Variables:
-        OPENAI_API_KEY: OpenAI API key for authentication
-
-    Command Line Arguments:
-        --config: Path to config JSON file
-
-    Raises:
-        SystemExit: If required environment variables are missing
-        FileNotFoundError: If config file is not found
-    """
-    load_dotenv()
-
-    if not os.getenv('OPENAI_API_KEY'):
-        exit_with_error("OPENAI_API_KEY not found in .env file")
-
+def parse_arguments() -> argparse.Namespace:
+    """Parse and return command line args for config path and verbosity."""
     parser = argparse.ArgumentParser(
         description='CLI Chat Application',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -107,31 +73,153 @@ async def run() -> None:
         action='store_true',
         help='run with verbose logging'
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def init_logger(verbose: bool) -> logging.Logger:
+    """Initialize and return a logger with appropriate verbosity level."""
     logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format='[%(levelname)s] %(message)s'
+        level=logging.DEBUG if verbose else logging.INFO,
+        format='\x1b[90m[%(levelname)s]\x1b[0m %(message)s'
     )
-    logger = logging.getLogger()
+    return logging.getLogger()
 
-    config = load_config(args.config)
 
+def print_colored(text: str, color: ColorType, end: str = "\n") -> None:
+    """Print text in specified color and reset afterwards."""
+    print(f"{color}{text}{Colors.RESET}", end=end)
+
+
+def set_color(color: ColorType) -> None:
+    """Set terminal color."""
+    print(color, end='')
+
+
+def clear_line() -> None:
+    """Move up one line and clear it."""
+    print('\x1b[1A\x1b[2K', end='')
+
+
+async def get_user_query(remaining_queries: List[str]) -> Optional[str]:
+    """Get user input or next example query, handling empty inputs
+    and quit commands."""
+    set_color(Colors.YELLOW)
+    query = input('Query: ').strip()
+
+    if len(query) == 0:
+        if len(remaining_queries) > 0:
+            query = remaining_queries.pop(0)
+            clear_line()
+            print_colored(f'Example Query: {query}', Colors.YELLOW)
+        else:
+            set_color(Colors.RESET)
+            print('\nPlease type a query, or "quit" or "q" to exit\n')
+            return await get_user_query(remaining_queries)
+
+    print(Colors.RESET)  # Reset after input
+
+    if query.lower() in ['quit', 'q']:
+        print_colored('Goodbye!\n', Colors.CYAN)
+        return None
+
+    return query
+
+
+async def handle_conversation(
+    agent: Runnable,
+    messages: List[BaseMessage],
+    example_queries: List[str],
+    verbose: bool
+) -> None:
+    """Manage an interactive conversation loop between the user and AI agent.
+
+    Args:
+        agent (Runnable): The initialized ReAct agent that processes queries
+        messages (List[BaseMessage]): List to maintain conversation history
+        example_queries (List[str]): list of example queries that can be used
+            when user presses Enter
+        verbose (bool): Flag to control detailed output of tool responses
+
+    Exception handling:
+    - TypeError: Ensures response is in correct string format
+    - General exceptions: Allows conversation to continue after errors
+
+    The conversation continues until user types 'quit' or 'q'.
+    """
+    print('\nConversation started. '
+          'Type "quit" or "q" to end the conversation.\n')
+    if len(example_queries) > 0:
+        print('Example Queries (just type Enter to supply them one by one):')
+        for ex_q in example_queries:
+            print(f"- {ex_q}")
+        print()
+
+    while True:
+        try:
+            query = await get_user_query(example_queries)
+            if not query:
+                break
+
+            messages.append(HumanMessage(content=query))
+
+            result = await agent.ainvoke({
+                'messages': messages
+            })
+
+            result_messages = cast(List[BaseMessage], result['messages'])
+            # the last message should be an AIMessage
+            response = result_messages[-1].content
+            if not isinstance(response, str):
+                raise TypeError(
+                    f"Expected string response, got {type(response)}"
+                )
+
+            # check if msg one before is a ToolMessage
+            message_one_before = result_messages[-2]
+            if isinstance(message_one_before, ToolMessage):
+                if verbose:
+                    # show tools call response
+                    print(message_one_before.content)
+                # new line after tool call output
+                print()
+            print_colored(f"{response}\n", Colors.CYAN)
+            messages.append(AIMessage(content=response))
+
+        except Exception as e:
+            print(f'Error getting response: {str(e)}')
+            print('You can continue chatting or type "quit" to exit.')
+
+
+async def init_react_agent(
+    config: ConfigType,
+    logger: logging.Logger
+) -> tuple[Runnable, List[BaseMessage], McpServerCleanupFn]:
+    """Initialize and configure a ReAct agent for conversation handling.
+
+    Args:
+        config (ConfigType): Configuration dictionary containing LLM and
+            MCP server settings
+        logger (logging.Logger): Logger instance for initialization
+            status updates
+
+    Returns:
+        tuple[Runnable, List[BaseMessage], McpServerCleanupFn]:
+            Returns a tuple containing:
+            - Configured ReAct agent ready for conversation
+            - Initial message list (empty or with system prompt)
+            - Cleanup function for MCP server connections
+    """
     llm_config = config['llm']
     logger.info(f'Initializing model... {json.dumps(llm_config, indent=2)}\n')
 
-    # FIXME: how to avoid the following cast?
-    llm: BaseChatModel = cast(
-        BaseChatModel,
-        init_chat_model(
-            model=llm_config['model'],
-            model_provider=llm_config['model_provider'],
-            temperature=llm_config['temperature'],
-            max_tokens=llm_config['max_tokens'],
-        )
+    llm = init_chat_model(
+        model=llm_config['model'],
+        model_provider=llm_config['model_provider'],
+        temperature=llm_config['temperature'],
+        max_tokens=llm_config['max_tokens'],
     )
 
-    mcp_configs: Dict[str, Dict[str, Any]] = config['mcp_servers']
+    mcp_configs = config['mcp_servers']
     logger.info(f'Initializing {len(mcp_configs)} MCP server(s)...\n')
     tools, mcp_cleanup = await convert_mcp_to_langchain_tools(
         mcp_configs,
@@ -144,69 +232,39 @@ async def run() -> None:
     )
 
     messages: List[BaseMessage] = []
-    system_prompt: Optional[str] = llm_config.get('system_prompt')
+    system_prompt = llm_config.get('system_prompt')
     if system_prompt and isinstance(system_prompt, str):
         messages.append(SystemMessage(content=system_prompt))
 
-    print('\nConversation started. '
-          'Type "quit" or "q" to end the conversation.\n')
-    sample_queries = config.get('sample_queries')
-    if sample_queries is not None:
-        print('Sample Queries (just type Enter to supply them one by one):')
-        for query in sample_queries:
-            print(f"- {query}")
-        print()
-    else:
-        sample_queries = []
+    return agent, messages, mcp_cleanup
 
-    while True:
-        try:
-            set_color(Colors.YELLOW)
-            query = input('Query: ').strip()
 
-            if len(query) == 0:
-                if len(sample_queries) > 0:
-                    query = sample_queries.pop(0)
-                    clear_line()
-                    print_colored(f'Sample Query: {query}', Colors.YELLOW)
-                else:
-                    set_color(Colors.RESET)
-                    print('\nPlease type a query, or "quit" or "q" to exit\n')
-                    continue
+async def run() -> None:
+    """Main async function to set up and run the simple chat app."""
+    mcp_cleanup: Optional[McpServerCleanupFn] = None
+    try:
+        load_dotenv()
+        args = parse_arguments()
+        logger = init_logger(args.verbose)
+        config = load_config(args.config)
+        example_queries = (
+            config.get('example_queries')[:]
+            if config.get('example_queries') is not None
+            else []
+        )
 
-            print(Colors.RESET)  # Reset after input
+        agent, messages, mcp_cleanup = await init_react_agent(config, logger)
 
-            if query.lower() in ['quit', 'q']:
-                print_colored('Goodbye!\n', Colors.CYAN)
-                break
+        await handle_conversation(
+            agent,
+            messages,
+            example_queries,
+            args.verbose
+        )
 
-            messages.append(HumanMessage(content=query))
-
-            result: Dict[str, List[BaseMessage]] = await agent.ainvoke({
-                'messages': messages
-            })
-
-            # the last message should be an AIMessage
-            response = result['messages'][-1].content
-            # check if msg one before is a ToolMessage
-            message_one_before = result['messages'][-2]
-            if isinstance(message_one_before, ToolMessage):
-                if args.verbose:
-                    # show tools call respose
-                    print(message_one_before.content)
-                # new line after tool call output
-                print()
-            print_colored(f"{response}\n", Colors.CYAN)
-            messages.append(AIMessage(content=response))
-
-        except KeyboardInterrupt:
-            print_colored('Goodbye!\n', Colors.CYAN)
-            break
-        except Exception as e:
-            print(f'Error getting response: {str(e)}')
-            print('You can continue chatting or type "quit" to exit.')
-
-    await mcp_cleanup()
+    finally:
+        if mcp_cleanup is not None:
+            await mcp_cleanup()
 
 
 def main() -> None:

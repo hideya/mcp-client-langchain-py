@@ -3,6 +3,12 @@
 This simple [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 client demonstrates MCP server invocations by LangChain ReAct Agent.
 
+It leverages a utility function `convert_mcp_to_langchain_tools()` from
+`langchain_mcp_tools`.  
+This function handles parallel initialization of specified multiple MCP servers
+and converts their available tools into a list of
+[LangChain-compatible tools](https://js.langchain.com/docs/how_to/tool_calling/).
+
 LLMs from Anthropic, OpenAI and Groq are currently supported.
 
 A typescript version of this MCP client is available
@@ -11,11 +17,11 @@ A typescript version of this MCP client is available
 ## Requirements
 
 - Python 3.11+
-- [`uv`](https://docs.astral.sh/uv/) installation.
+- [`uv`](https://docs.astral.sh/uv/) installation
 - API keys from [Anthropic](https://console.anthropic.com/settings/keys),
   [OpenAI](https://platform.openai.com/api-keys), and/or
   [Groq](https://console.groq.com/keys)
-  as needed.
+  as needed
 
 ## Setup
 1. Install dependencies:
@@ -64,6 +70,6 @@ See commandline options:
 make start-h
 ```
 
-At the prompt, you can simply press Enter to use sample queries that perform MCP server tool invocations.
+At the prompt, you can simply press Enter to use example queries that perform MCP server tool invocations.
 
-Sample queries can be configured in  `llm_mcp_config.json5`
+Example queries can be configured in  `llm_mcp_config.json5`

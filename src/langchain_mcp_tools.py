@@ -6,8 +6,8 @@ import sys
 from contextlib import AsyncExitStack, asynccontextmanager
 from typing import (
     Any,
+    Awaitable,
     Callable,
-    Coroutine,
     Dict,
     List,
     NoReturn,
@@ -39,7 +39,7 @@ The key aspects are:
 1. Core Challenge:
    - Managing async resources (stdio_client and ClientSession) that seems to
      rely exclusively on asynccontextmanager for cleanup with no manual cleanup
-     options (based on the mcp python-sdk impl as of Jan/15/2025)
+     options (based on the mcp python-sdk impl as of Jan 14, 2025 #62a0af6)
    - Initializing multiple servers in parallel
    - Keeping sessions alive for later use
    - Ensuring proper cleanup in the same task that created them
@@ -84,7 +84,7 @@ resource lifecycle management through context managers.
 """
 
 
-async def convert_single_mcp_to_langchain_tools(
+async def spawn_mcp_server_tools_task(
     server_name: str,
     server_config: Dict[str, Any],
     langchain_tools: List[BaseTool],
@@ -95,8 +95,8 @@ async def convert_single_mcp_to_langchain_tools(
     """Convert MCP server tools to LangChain compatible tools
     and manage lifecycle.
 
-    This async function initializes an MCP server connection, converts its
-    tools to LangChain format, and manages the connection lifecycle.
+    This task initializes an MCP server connection, converts its tools
+    to LangChain format, and manages the connection lifecycle.
     It adds the tools to the provided langchain_tools list and uses events
     for synchronization.
 
@@ -135,7 +135,7 @@ async def convert_single_mcp_to_langchain_tools(
         )
 
         @asynccontextmanager
-        async def print_before_aexit(context_manager, message):
+        async def log_before_aexit(context_manager, message):
             yield await context_manager.__aenter__()
             logger.info(message)
             await context_manager.__aexit__(None, None, None)
@@ -148,7 +148,7 @@ async def convert_single_mcp_to_langchain_tools(
         read, write = stdio_transport
 
         session = await exit_stack.enter_async_context(
-            print_before_aexit(
+            log_before_aexit(
                 ClientSession(read, write),
                 f'MCP server "{server_name}": session closed'
             )
@@ -160,7 +160,7 @@ async def convert_single_mcp_to_langchain_tools(
         tools_response = await session.list_tools()
 
         for tool in tools_response.tools:
-            class McpLangChainTool(BaseTool):
+            class McpToLangChainAdapter(BaseTool):
                 name: str = tool.name or 'NO NAME'
                 description: str = tool.description or ''
                 args_schema: Type[BaseModel] = jsonschema_to_pydantic(
@@ -184,7 +184,7 @@ async def convert_single_mcp_to_langchain_tools(
                                 f'received result (size: {size})')
                     return result.content
 
-            langchain_tools.append(McpLangChainTool())
+            langchain_tools.append(McpToLangChainAdapter())
 
         logger.info(f'MCP server "{server_name}": {len(langchain_tools)} '
                     f'tool(s) available:')
@@ -201,17 +201,19 @@ async def convert_single_mcp_to_langchain_tools(
     await exit_stack.aclose()
 
 
+McpServerCleanupFn = Callable[[], Awaitable[None]]
+
+
 async def convert_mcp_to_langchain_tools(
     server_configs: Dict[str, Dict[str, Any]],
     logger: logging.Logger = logging.getLogger(__name__)
-) -> Tuple[List[BaseTool], Callable[[], Coroutine[Any, Any, None]]]:
+) -> Tuple[List[BaseTool], McpServerCleanupFn]:
     """Initialize multiple MCP servers and convert their tools to
     LangChain format.
 
-    This async function manages parallel initialization of multiple
-    MCP servers, converts their tools to LangChain format, and provides
-    a cleanup mechanism. It synchronizes server initialization using events
-    and combines all tools into a single list.
+    This async function manages parallel initialization of multiple MCP
+    servers, converts their tools to LangChain format, and provides a cleanup
+    mechanism. It orchestrates the full lifecycle of multiple servers.
 
     Args:
         server_configs: Dictionary mapping server names to their
@@ -235,22 +237,22 @@ async def convert_mcp_to_langchain_tools(
         # Use tools...
         await cleanup()
     """
-    tools_list = []
+    per_server_tools = []
     ready_event_list = []
     cleanup_event_list = []
 
     tasks = []
     for server_name, server_config in server_configs.items():
-        tools_out: List[BaseTool] = []
-        tools_list.append(tools_out)
+        server_tools_accumulator: List[BaseTool] = []
+        per_server_tools.append(server_tools_accumulator)
         ready_event = asyncio.Event()
         ready_event_list.append(ready_event)
         cleanup_event = asyncio.Event()
         cleanup_event_list.append(cleanup_event)
-        task = asyncio.create_task(convert_single_mcp_to_langchain_tools(
+        task = asyncio.create_task(spawn_mcp_server_tools_task(
             server_name,
             server_config,
-            tools_out,
+            server_tools_accumulator,
             ready_event,
             cleanup_event,
             logger
@@ -260,7 +262,9 @@ async def convert_mcp_to_langchain_tools(
     for ready_event in ready_event_list:
         await ready_event.wait()
 
-    langchain_tools = [item for sublist in tools_list for item in sublist]
+    langchain_tools = [
+        item for sublist in per_server_tools for item in sublist
+    ]
 
     async def mcp_cleanup() -> None:
         for cleanup_event in cleanup_event_list:
