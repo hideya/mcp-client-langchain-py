@@ -19,5 +19,8 @@ start-h:
 build:
 	uv build
 
+test:
+	pytest tests/ -v
+
 clean:
 	rm -rf .venv __pycache__ build/ dist/ *.egg-info

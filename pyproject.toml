@@ -16,3 +16,9 @@ dependencies = [
     "pympler>=1.1",
     "python-dotenv>=1.0.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.2",
+]
