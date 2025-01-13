@@ -1,27 +1,27 @@
 # Standard library imports
-from contextlib import AsyncExitStack, asynccontextmanager
+import asyncio
+import logging
 import os
 import sys
+from contextlib import AsyncExitStack, asynccontextmanager
 from typing import (
-    List,
-    Dict,
-    Type,
-    NoReturn,
+    Any,
     Callable,
     Coroutine,
-    Any,
+    Dict,
+    List,
+    NoReturn,
     Tuple,
-    cast,
+    Type,
 )
-import asyncio
 
 # Third-party imports
 try:
+    from jsonschema_pydantic import jsonschema_to_pydantic  # type: ignore
     from langchain_core.tools import BaseTool, ToolException
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
     from pydantic import BaseModel
-    from jsonschema_pydantic import jsonschema_to_pydantic  # type: ignore
     from pympler import asizeof
 except ImportError as e:
     print(f'\nError: Required package not found: {e}')
@@ -32,21 +32,39 @@ except ImportError as e:
 async def convert_single_mcp_to_langchain_tools(
     server_name: str,
     server_config: Dict[str, Any],
-    langchain_tools,
-    ready_event,
-    cleanup_event
+    langchain_tools: List[BaseTool],
+    ready_event: asyncio.Event,
+    cleanup_event: asyncio.Event,
+    logger: logging.Logger = logging.getLogger(__name__)
 ) -> None:
-    """Convert MCP server tools to LangChain compatible tools.
+    """Convert MCP server tools to LangChain compatible tools
+    and manage lifecycle.
+
+    This async function initializes an MCP server connection, converts its
+    tools to LangChain format, and manages the connection lifecycle.
+    It adds the tools to the provided langchain_tools list and uses events
+    for synchronization.
 
     Args:
-        server_name: Name of the server
-        server_config: Server configuration dictionary
+        server_name: Name of the MCP server
+        server_config: Server configuration dictionary containing command,
+            args, and env
+        langchain_tools: List to which the converted LangChain tools will
+            be appended
+        ready_event: Event to signal when tools are ready for use
+        cleanup_event: Event to trigger cleanup and connection closure
+        logger: Logger instance to use for logging events and errors.
+               Defaults to module logger.
 
     Returns:
-        Tuple containing list of LangChain tools and cleanup callback
+        None
+
+    Raises:
+        Exception: If there's an error in server connection or tool conversion
     """
     try:
-        print(f'MCP server "{server_name}": initializing with:', server_config)
+        logger.info(f'MCP server "{server_name}": initializing with:',
+                    server_config)
 
         # NOTE: `uv` and `npx` seem to require PATH to be set.
         # To avoid confusion, it was decided to automatically append it
@@ -64,7 +82,7 @@ async def convert_single_mcp_to_langchain_tools(
         @asynccontextmanager
         async def print_before_aexit(context_manager, message):
             yield await context_manager.__aenter__()
-            print(message)
+            logger.info(message)
             await context_manager.__aexit__(None, None, None)
 
         exit_stack = AsyncExitStack()
@@ -82,7 +100,7 @@ async def convert_single_mcp_to_langchain_tools(
         )
 
         await session.initialize()
-        print(f'MCP server "{server_name}": connected')
+        logger.info(f'MCP server "{server_name}": connected')
 
         tools_response = await session.list_tools()
 
@@ -100,25 +118,25 @@ async def convert_single_mcp_to_langchain_tools(
                     )
 
                 async def _arun(self, **kwargs: Any) -> Any:
-                    print(f'MCP tool "{server_name}"/"{tool.name}"'
-                          f' received input:', kwargs)
+                    logger.info(f'MCP tool "{server_name}"/"{tool.name}"'
+                                f' received input:', kwargs)
                     result = await session.call_tool(self.name, kwargs)
                     if result.isError:
                         raise ToolException(result.content)
 
                     size = asizeof.asizeof(result.content)
-                    print(f'MCP tool "{server_name}"/"{tool.name}" received '
-                          f'result (size: {size})')
+                    logger.info(f'MCP tool "{server_name}"/"{tool.name}" '
+                                f'received result (size: {size})')
                     return result.content
 
             langchain_tools.append(McpLangChainTool())
 
-        print(f'MCP server "{server_name}": {len(langchain_tools)} tool(s) '
-              f'available:')
+        logger.info(f'MCP server "{server_name}": {len(langchain_tools)} '
+                    f'tool(s) available:')
         for tool in langchain_tools:
-            print(f'- {tool.name}')
+            logger.info(f'- {tool.name}')
     except Exception as e:
-        print(f'Error getting response: {str(e)}')
+        logger.info(f'Error getting response: {str(e)}')
         raise
 
     ready_event.set()
@@ -129,15 +147,38 @@ async def convert_single_mcp_to_langchain_tools(
 
 
 async def convert_mcp_to_langchain_tools(
-    server_configs: Dict[str, Dict[str, Any]], verbose=False
+    server_configs: Dict[str, Dict[str, Any]],
+    logger: logging.Logger = logging.getLogger(__name__)
 ) -> Tuple[List[BaseTool], Callable[[], Coroutine[Any, Any, None]]]:
-    """Convert multiple MCP servers' tools to LangChain tools.
+    """Initialize multiple MCP servers and convert their tools to
+    LangChain format.
+
+    This async function manages parallel initialization of multiple
+    MCP servers, converts their tools to LangChain format, and provides
+    a cleanup mechanism. It synchronizes server initialization using events
+    and combines all tools into a single list.
 
     Args:
-        server_configs: Dictionary of server configurations
+        server_configs: Dictionary mapping server names to their
+            configurations, where each configuration contains command, args,
+            and env settings
+        logger: Logger instance to use for logging events and errors.
+               Defaults to module logger.
 
     Returns:
-        Tuple containing list of LangChain tools and cleanup callback
+        A tuple containing:
+            - List of converted LangChain tools from all servers
+            - Async cleanup function to properly shutdown all server
+                connections
+
+    Example:
+        server_configs = {
+            "server1": {"command": "npm", "args": ["start"]},
+            "server2": {"command": "./server", "args": ["-p", "8000"]}
+        }
+        tools, cleanup = await convert_mcp_to_langchain_tools(server_configs)
+        # Use tools...
+        await cleanup()
     """
     tools_list = []
     ready_event_list = []
@@ -145,7 +186,7 @@ async def convert_mcp_to_langchain_tools(
 
     tasks = []
     for server_name, server_config in server_configs.items():
-        tools_out: List[AsyncExitStack] = []
+        tools_out: List[BaseTool] = []
         tools_list.append(tools_out)
         ready_event = asyncio.Event()
         ready_event_list.append(ready_event)
@@ -156,7 +197,8 @@ async def convert_mcp_to_langchain_tools(
             server_config,
             tools_out,
             ready_event,
-            cleanup_event
+            cleanup_event,
+            logger
         ))
         tasks.append(task)
 
@@ -169,10 +211,9 @@ async def convert_mcp_to_langchain_tools(
         for cleanup_event in cleanup_event_list:
             cleanup_event.set()
 
-    print(f'MCP servers initialized: {len(langchain_tools)} tool(s) '
-          f'available in total')
-    if verbose:
-        for tool in langchain_tools:
-            print(f'- {tool.name}')
+    logger.info(f'MCP servers initialized: {len(langchain_tools)} tool(s) '
+                f'available in total')
+    for tool in langchain_tools:
+        logger.debug(f'- {tool.name}')
 
     return langchain_tools, mcp_cleanup

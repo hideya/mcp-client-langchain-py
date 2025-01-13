@@ -1,28 +1,33 @@
 # Standard library imports
 import argparse
 import asyncio
+import json
+import logging
 import os
 import sys
+from pathlib import Path
 from typing import (
-    List,
+    Any,
     Dict,
+    List,
     NoReturn,
     Optional,
-    Any,
     cast,
 )
-import json
-from pathlib import Path
 
 # Third-party imports
 try:
-    from langchain.chat_models import init_chat_model
-    from langgraph.prebuilt import create_react_agent
-    from langchain_core.language_models.chat_models import BaseChatModel
-    from langchain.schema import BaseMessage, HumanMessage, AIMessage
-    from langchain.schema import SystemMessage
-    from langchain_core.messages.tool import ToolMessage
     from dotenv import load_dotenv
+    from langchain.chat_models import init_chat_model
+    from langchain.schema import (
+        AIMessage,
+        BaseMessage,
+        HumanMessage,
+        SystemMessage,
+    )
+    from langchain_core.language_models.chat_models import BaseChatModel
+    from langchain_core.messages.tool import ToolMessage
+    from langgraph.prebuilt import create_react_agent
 except ImportError as e:
     print(f'\nError: Required package not found: {e}')
     print('Please ensure all required packages are installed\n')
@@ -60,7 +65,8 @@ def exit_with_error(message: str) -> NoReturn:
     Args:
         message: Error message to display before exiting
     """
-    print(f'Error: {message}')
+    logger = logging.getLogger()
+    logger.error(f'Error: {message}')
     sys.exit(1)
 
 
@@ -103,10 +109,16 @@ async def run() -> None:
     )
     args = parser.parse_args()
 
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format='[%(levelname)s] %(message)s'
+    )
+    logger = logging.getLogger()
+
     config = load_config(args.config)
 
     llm_config = config['llm']
-    print('\nInitializing model...', json.dumps(llm_config, indent=2), '\n')
+    logger.info(f'Initializing model... {json.dumps(llm_config, indent=2)}\n')
 
     # FIXME: how to avoid the following cast?
     llm: BaseChatModel = cast(
@@ -120,10 +132,10 @@ async def run() -> None:
     )
 
     mcp_configs: Dict[str, Dict[str, Any]] = config['mcp_servers']
-    print(f'Initializing {len(mcp_configs)} MCP server(s)...\n')
+    logger.info(f'Initializing {len(mcp_configs)} MCP server(s)...\n')
     tools, mcp_cleanup = await convert_mcp_to_langchain_tools(
         mcp_configs,
-        args.verbose
+        logger
     )
 
     agent = create_react_agent(
