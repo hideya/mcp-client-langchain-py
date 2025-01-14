@@ -37,37 +37,42 @@ require context managers while enabling parallel initialization.
 The key aspects are:
 
 1. Core Challenge:
-   - Managing async resources (stdio_client and ClientSession) that seems to
-     rely exclusively on asynccontextmanager for cleanup with no manual cleanup
-     options (based on the mcp python-sdk impl as of Jan 14, 2025 #62a0af6)
-   - Initializing multiple servers in parallel
-   - Keeping sessions alive for later use
-   - Ensuring proper cleanup in the same task that created them
+   - Async resources management for `stdio_client` and `ClientSession` seems
+     to rely exclusively on `asynccontextmanager` for cleanup with no manual
+     cleanup options (based on the mcp python-sdk impl as of Jan 14, 2025)
+   - Initializing multiple MCP servers in parallel requires a dedicated
+     `asyncio.Task` per server
+   - Necessity of keeping sessions alive for later use after initialization
+   - Ensuring proper cleanup later in the same task that created them
 
 2. Solution Strategy:
    A key requirement for parallel initialization is that each server must be
-   initialized in its own dedicated task - there's no way around this if we
-   want true parallel initialization. However, this creates a challenge since
-   we also need to maintain long-lived sessions and handle cleanup properly.
+   initialized in its own dedicated task - there's no way around this as far
+   as I understand. However, this creates a challenge since we also need to
+   maintain long-lived sessions and handle cleanup properly.
 
    The key insight is to keep the initialization tasks alive throughout the
    session lifetime, rather than letting them complete after initialization.
-   By using events for coordination, we can:
+
+   By using `asyncio.Event`s for coordination, we can:
    - Allow parallel initialization while maintaining proper context management
    - Keep each initialization task running until explicit cleanup is requested
    - Ensure cleanup occurs in the same task that created the resources
    - Provide a clean interface for the caller to manage the lifecycle
 
    Alternative Considered:
-   A generator/coroutine approach using 'finally' block for cleanup was
+   A generator/coroutine approach using `finally` block for cleanup was
    considered but rejected because:
-   - The 'finally' block in a generator/coroutine can be executed by a
-     different task than the one that ran the main body of the code
-   - This breaks the requirement that AsyncExitStack.aclose() must be
+   - It turned out that the `finally` block in a generator/coroutine can be
+     executed by a different task than the one that ran the main body of
+     the code
+   - This breaks the requirement that `AsyncExitStack.aclose()` must be
      called from the same task that created the context
 
 3. Task Lifecycle:
+
    To allow the initialization task to stay alive waiting for cleanup:
+   ```
    [Task starts]
      ↓
    Initialize server & convert tools
@@ -78,9 +83,17 @@ The key aspects are:
      ↓
    When cleanup_event is set:
    exit_stack.aclose() (cleanup in original task)
+   ```
+This approach indeed enables parallel initialization while maintaining proper
+async resource lifecycle management through context managers.
+However, I'm afraid I'm twisting things around too much.
+It usually means I'm doing something very worng...
 
-This pattern enables parallel initialization while maintaining proper async
-resource lifecycle management through context managers.
+I think it is a natural assumption that MCP SDK is designed with consideration
+for parallel server initialization.
+I'm not sure what I'm missing...
+(FYI, with the TypeScript MCP SDK, parallel initialization was
+pretty straightforward.
 """
 
 

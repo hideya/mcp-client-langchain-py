@@ -1,7 +1,7 @@
 # NOTES: 
 # - The command lines (recipe lines) must start with a TAB character.
 # - Each command line runs in a separate shell.
-.PHONY: clean install start start-v start-h build publish test clean
+.PHONY: install start start-v start-h build publish test clean
 
 .venv:
 	uv venv
@@ -29,15 +29,7 @@ publish:
 	--password ${PYPI_API_KEY}
 
 test:
-	pytest tests/ -v
+	uvx pytest tests/ -v
 
 clean:
-	rm -rf \
-		.venv \
-		__pycache__ \
-		build/ dist/ \
-		*.egg-info \
-		.mypy_cache \
-		.pytest_cache \
-		src/__pycache__ \
-		src/*.egg-info
+	git clean -fdx -e .env
