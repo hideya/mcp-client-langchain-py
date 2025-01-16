@@ -19,18 +19,14 @@ start-v:
 start-h:
 	uv run src/cli_chat.py -h
 
-build:
+build: clean install
 	uv build
 	@echo
 	uvx twine check dist/*
 
-publish:
-	uvx twine upload --verbose \
-		--repository-url https://upload.pypi.org/legacy/ dist/* \
-		--password ${PYPI_API_KEY}
-
-test:
-	python -m pytest tests/ -v
+test: install
+	uv pip install -e ".[dev]"
+	.venv/bin/pytest tests/ -v
 
 clean:
 	git clean -fdxn -e .env

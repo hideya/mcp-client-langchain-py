@@ -27,6 +27,10 @@ try:
     from langchain_core.runnables.base import Runnable
     from langchain_core.messages.tool import ToolMessage
     from langgraph.prebuilt import create_react_agent
+    from langchain_mcp_tools.langchain_mcp_tools import (  # <-- TO BE ADJUSTED
+        convert_mcp_to_langchain_tools,
+        McpServerCleanupFn,
+    )
 except ImportError as e:
     print(f'\nError: Required package not found: {e}')
     print('Please ensure all required packages are installed\n')
@@ -34,10 +38,6 @@ except ImportError as e:
 
 # Local application imports
 from config_loader import load_config
-from langchain_mcp_tools import (
-    convert_mcp_to_langchain_tools,
-    McpServerCleanupFn,
-)
 
 # Type definitions
 ConfigType = Dict[str, Any]

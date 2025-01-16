@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from langchain_core.tools import BaseTool
-from src.langchain_mcp_tools import (
+from langchain_mcp_tools.langchain_mcp_tools import (
     convert_mcp_to_langchain_tools,
 )
 
@@ -11,14 +11,15 @@ pytest_plugins = ('pytest_asyncio',)
 
 @pytest.fixture
 def mock_stdio_client():
-    with patch('src.langchain_mcp_tools.stdio_client') as mock:
+    with patch('langchain_mcp_tools.langchain_mcp_tools.stdio_client') as mock:
         mock.return_value.__aenter__.return_value = (AsyncMock(), AsyncMock())
         yield mock
 
 
 @pytest.fixture
 def mock_client_session():
-    with patch('src.langchain_mcp_tools.ClientSession') as mock:
+    with patch('langchain_mcp_tools.langchain_mcp_tools.ClientSession') \
+            as mock:
         session = AsyncMock()
         # Mock the list_tools response
         session.list_tools.return_value = MagicMock(
