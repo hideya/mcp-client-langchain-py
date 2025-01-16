@@ -1,11 +1,12 @@
 [project]
 name = "mcp-client-langchain-py"
-version = "0.0.1"
+version = "0.1.0"
 description = "MCP Client Using LangChain / Python"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "jsonschema-pydantic>=0.6",
+    "langchain-mcp-tools>=0.1.0",
     "langchain>=0.3.14",
     "langchain-anthropic>=0.3.1",
     "langchain-groq>=0.2.3",
@@ -15,10 +16,4 @@ dependencies = [
     "pyjson5>=1.6.8",
     "pympler>=1.1",
     "python-dotenv>=1.0.1",
-]
-
-[dependency-groups]
-dev = [
-    "pytest>=8.3.4",
-    "pytest-asyncio>=0.25.2",
 ]

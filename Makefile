@@ -1,6 +1,9 @@
 # NOTES: 
 # - The command lines (recipe lines) must start with a TAB character.
-# - Each command line runs in a separate shell.
+# - Each command line runs in a separate shell without .ONESHELL:
+.PHONY: install start start-v start-h build clean
+.ONESHELL:
+
 .venv:
 	uv venv
 
@@ -19,8 +22,7 @@ start-h:
 build:
 	uv build
 
-test:
-	pytest tests/ -v
-
 clean:
-	rm -rf .venv __pycache__ build/ dist/ *.egg-info
+	git clean -fdxn -e .env
+	@read -p 'OK?'
+	git clean -fdx -e .env

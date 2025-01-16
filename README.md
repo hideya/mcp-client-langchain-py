@@ -1,13 +1,13 @@
-# MCP Client Using LangChain / Python [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/hideya/mcp-langchain-client-ts/blob/main/LICENSE)
+# MCP Client Using LangChain / Python [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/hideya/langchain-mcp-tools-py/blob/main/LICENSE)
 
 This simple [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
-client demonstrates MCP server invocations by LangChain ReAct Agent.
+client demonstrates the use of MCP server tools by LangChain ReAct Agent.
 
 It leverages a utility function `convert_mcp_to_langchain_tools()` from
-`langchain_mcp_tools`.  
+[`langchain_mcp_tools`](https://pypi.org/project/langchain-mcp-tools/).  
 This function handles parallel initialization of specified multiple MCP servers
-and converts their available tools into a list of
-[LangChain-compatible tools](https://js.langchain.com/docs/how_to/tool_calling/).
+and converts their available tools into a list of LangChain-compatible tools
+([List[BaseTool]](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.base.BaseTool.html#langchain_core.tools.base.BaseTool)).
 
 LLMs from Anthropic, OpenAI and Groq are currently supported.
 
@@ -24,6 +24,7 @@ A typescript version of this MCP client is available
   as needed
 
 ## Setup
+
 1. Install dependencies:
     ```bash
     make install
@@ -59,6 +60,7 @@ Run the app:
 ```bash
 make start
 ```
+It takes a while on the first run.
 
 Run in verbose mode:
 ```bash
