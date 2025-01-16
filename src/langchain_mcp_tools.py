@@ -36,20 +36,23 @@ This code implements a specific pattern for managing async resources that
 require context managers while enabling parallel initialization.
 The key aspects are:
 
-1. Core Challenge:
-   - Async resources management for `stdio_client` and `ClientSession` seems
-     to rely exclusively on `asynccontextmanager` for cleanup with no manual
-     cleanup options (based on the mcp python-sdk impl as of Jan 14, 2025)
+1. Challenge:
+
+   A key requirement for parallel initialization is that each server must be
+   initialized in its own dedicated task - there's no way around this as far as
+   I know. However, this poses a challenge when combined with
+   `asynccontextmanager`.
+
+   - Resources management for `stdio_client` and `ClientSession` seems
+     to require relying exclusively on `asynccontextmanager` for cleanup,
+     with no manual cleanup options
+     (based on the mcp python-sdk impl as of Jan 14, 2025)
    - Initializing multiple MCP servers in parallel requires a dedicated
      `asyncio.Task` per server
-   - Necessity of keeping sessions alive for later use after initialization
-   - Ensuring proper cleanup later in the same task that created them
+   - Server cleanup can be initiated later by a task other than the one that
+     initialized the resources
 
-2. Solution Strategy:
-   A key requirement for parallel initialization is that each server must be
-   initialized in its own dedicated task - there's no way around this as far
-   as I understand. However, this creates a challenge since we also need to
-   maintain long-lived sessions and handle cleanup properly.
+2. Solution:
 
    The key insight is to keep the initialization tasks alive throughout the
    session lifetime, rather than letting them complete after initialization.
@@ -71,7 +74,8 @@ The key aspects are:
 
 3. Task Lifecycle:
 
-   To allow the initialization task to stay alive waiting for cleanup:
+   The following task lifecyle diagram illustrates how the above strategy
+   was impelemented:
    ```
    [Task starts]
      ↓
@@ -272,16 +276,15 @@ async def convert_mcp_to_langchain_tools(
         ))
         tasks.append(task)
 
-    for ready_event in ready_event_list:
-        await ready_event.wait()
+    await asyncio.gather(*(event.wait() for event in ready_event_list))
 
     langchain_tools = [
         item for sublist in per_server_tools for item in sublist
     ]
 
     async def mcp_cleanup() -> None:
-        for cleanup_event in cleanup_event_list:
-            cleanup_event.set()
+        for event in cleanup_event_list:
+            event.set()
 
     logger.info(f'MCP servers initialized: {len(langchain_tools)} tool(s) '
                 f'available in total')

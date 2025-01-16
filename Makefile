@@ -1,7 +1,8 @@
 # NOTES: 
 # - The command lines (recipe lines) must start with a TAB character.
-# - Each command line runs in a separate shell.
-.PHONY: install start start-v start-h build publish test clean
+# - Each command line runs in a separate shell without .ONESHELL:
+.PHONY: install start start-v start-h build test clean
+.ONESHELL:
 
 .venv:
 	uv venv
@@ -25,11 +26,13 @@ build:
 
 publish:
 	uvx twine upload --verbose \
-	--repository-url https://upload.pypi.org/legacy/ dist/* \
-	--password ${PYPI_API_KEY}
+		--repository-url https://upload.pypi.org/legacy/ dist/* \
+		--password ${PYPI_API_KEY}
 
 test:
-	uvx pytest tests/ -v
+	python -m pytest tests/ -v
 
 clean:
+	git clean -fdxn -e .env
+	@read -p 'OK?'
 	git clean -fdx -e .env
