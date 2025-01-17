@@ -266,6 +266,7 @@ async def convert_mcp_to_langchain_tools(
     ready_event_list = []
     cleanup_event_list = []
 
+    # Concurrently initialize all the MCP servers
     tasks = []
     for server_name, server_config in server_configs.items():
         server_tools_accumulator: List[BaseTool] = []
@@ -274,7 +275,6 @@ async def convert_mcp_to_langchain_tools(
         ready_event_list.append(ready_event)
         cleanup_event = asyncio.Event()
         cleanup_event_list.append(cleanup_event)
-        # Concurrently initialize all the MCP servers
         task = asyncio.create_task(spawn_mcp_server_tools_task(
             server_name,
             server_config,
