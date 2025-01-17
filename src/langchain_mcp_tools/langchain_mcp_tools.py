@@ -152,12 +152,14 @@ async def spawn_mcp_server_tools_task(
             env=env
         )
 
+        # Use an intermediate `asynccontextmanager` to log the cleanup message
         @asynccontextmanager
         async def log_before_aexit(context_manager, message):
             yield await context_manager.__aenter__()
             logger.info(message)
             await context_manager.__aexit__(None, None, None)
 
+        # Initialize the MCP server
         exit_stack = AsyncExitStack()
 
         stdio_transport = await exit_stack.enter_async_context(
@@ -175,8 +177,10 @@ async def spawn_mcp_server_tools_task(
         await session.initialize()
         logger.info(f'MCP server "{server_name}": connected')
 
+        # Get MCP tools
         tools_response = await session.list_tools()
 
+        # Wrap MCP tools to into LangChain tools
         for tool in tools_response.tools:
             class McpToLangChainAdapter(BaseTool):
                 name: str = tool.name or 'NO NAME'
@@ -212,10 +216,13 @@ async def spawn_mcp_server_tools_task(
         logger.error(f'Error getting response: {str(e)}')
         raise
 
+    # Set ready_event; signals tools are ready
     ready_event.set()
 
+    # Keep this task alive until cleanup is requested
     await cleanup_event.wait()
 
+    # Cleanup the resources
     await exit_stack.aclose()
 
 
@@ -267,6 +274,7 @@ async def convert_mcp_to_langchain_tools(
         ready_event_list.append(ready_event)
         cleanup_event = asyncio.Event()
         cleanup_event_list.append(cleanup_event)
+        # Concurrently initialize all the MCP servers
         task = asyncio.create_task(spawn_mcp_server_tools_task(
             server_name,
             server_config,
@@ -277,13 +285,16 @@ async def convert_mcp_to_langchain_tools(
         ))
         tasks.append(task)
 
+    # Wait for all tasks to finish filling in the `server_tools_accumulator`
     await asyncio.gather(*(event.wait() for event in ready_event_list))
 
+    # Flatten the tools list
     langchain_tools = [
         item for sublist in per_server_tools for item in sublist
     ]
 
     async def mcp_cleanup() -> None:
+        # Set cleanup_event to signal that it is time to clean up the resources
         for event in cleanup_event_list:
             event.set()
 
