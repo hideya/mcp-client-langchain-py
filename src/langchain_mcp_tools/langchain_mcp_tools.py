@@ -50,7 +50,8 @@ The key aspects are:
    - Initializing multiple MCP servers in parallel requires a dedicated
      `asyncio.Task` per server
    - Server cleanup can be initiated later by a task other than the one that
-     initialized the resources
+     initialized the resources, whereas `AsyncExitStack.aclose()` must be
+     called from the same task that created the context
 
 2. Solution:
 
