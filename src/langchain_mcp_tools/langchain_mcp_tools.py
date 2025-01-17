@@ -156,8 +156,10 @@ async def spawn_mcp_server_tools_task(
         @asynccontextmanager
         async def log_before_aexit(context_manager, message):
             yield await context_manager.__aenter__()
-            logger.info(message)
-            await context_manager.__aexit__(None, None, None)
+            try:
+                logger.info(message)
+            finally:
+                await context_manager.__aexit__(None, None, None)
 
         # Initialize the MCP server
         exit_stack = AsyncExitStack()
