@@ -294,7 +294,8 @@ async def convert_mcp_to_langchain_tools(
     ]
 
     async def mcp_cleanup() -> None:
-        # Set cleanup_event to signal that it is time to clean up the resources
+        # Define a cleanup callback to set cleanup_event and signal that
+        # it is time to clean up the resources
         for event in cleanup_event_list:
             event.set()
 
