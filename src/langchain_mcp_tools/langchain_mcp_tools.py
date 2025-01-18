@@ -1,7 +1,6 @@
 # Standard library imports
-import asyncio
 from anyio.streams.memory import (
-    MemoryObjectReceiveStream, 
+    MemoryObjectReceiveStream,
     MemoryObjectSendStream,
 )
 import logging
@@ -35,10 +34,13 @@ except ImportError as e:
     sys.exit(1)
 
 
+# Type alias for the bidirectional communication channels with the MCP server
+# FIXME: not defined in mcp.types, really?
 StdioTransport: TypeAlias = tuple[
     MemoryObjectReceiveStream[mcp_types.JSONRPCMessage | Exception],
     MemoryObjectSendStream[mcp_types.JSONRPCMessage]
 ]
+
 
 async def spawn_mcp_server_and_get_transport(
     server_name: str,
@@ -46,6 +48,21 @@ async def spawn_mcp_server_and_get_transport(
     exit_stack: AsyncExitStack,
     logger: logging.Logger = logging.getLogger(__name__)
 ) -> StdioTransport:
+    """
+    Spawns an MCP server process and establishes communication channels.
+
+    Args:
+        server_name: Server instance name to use for better logging
+        server_config: Configuration dictionary for server setup
+        exit_stack: Context manager for cleanup handling
+        logger: Logger instance for debugging and monitoring
+
+    Returns:
+        A tuple of receive and send streams for server communication
+
+    Raises:
+        Exception: If server spawning fails
+    """
     try:
         logger.info(f'MCP server "{server_name}": initializing with:',
                     server_config)
@@ -57,12 +74,14 @@ async def spawn_mcp_server_and_get_transport(
         if 'PATH' not in env:
             env['PATH'] = os.environ.get('PATH', '')
 
+        # Create server parameters with command, arguments and environment
         server_params = StdioServerParameters(
             command=server_config['command'],
             args=server_config.get('args', []),
             env=env
         )
 
+        # Initialize stdio client and register it with exit stack for cleanup
         stdio_transport = await exit_stack.enter_async_context(
             stdio_client(server_params)
         )
@@ -79,18 +98,35 @@ async def get_mcp_server_tools(
     exit_stack: AsyncExitStack,
     logger: logging.Logger = logging.getLogger(__name__)
 ) -> List[BaseTool]:
+    """
+    Retrieves and converts MCP server tools to LangChain format.
+
+    Args:
+        server_name: Server instance name to use for better logging
+        stdio_transport: Communication channels tuple
+        exit_stack: Context manager for cleanup handling
+        logger: Logger instance for debugging and monitoring
+
+    Returns:
+        List of LangChain tools converted from MCP tools
+
+    Raises:
+        Exception: If tool conversion fails
+    """
     try:
         read, write = stdio_transport
 
         # Use an intermediate `asynccontextmanager` to log the cleanup message
         @asynccontextmanager
         async def log_before_aexit(context_manager, message):
+            """Helper context manager that logs before cleanup"""
             yield await context_manager.__aenter__()
             try:
                 logger.info(message)
             finally:
                 await context_manager.__aexit__(None, None, None)
 
+        # Initialize client session with cleanup logging
         session = await exit_stack.enter_async_context(
             log_before_aexit(
                 ClientSession(read, write),
@@ -104,12 +140,14 @@ async def get_mcp_server_tools(
         # Get MCP tools
         tools_response = await session.list_tools()
 
-        # Wrap MCP tools to into LangChain tools
+        # Wrap MCP tools into LangChain tools
         langchain_tools: List[BaseTool] = []
         for tool in tools_response.tools:
+            # Define adapter class to convert MCP tool to LangChain format
             class McpToLangChainAdapter(BaseTool):
                 name: str = tool.name or 'NO NAME'
                 description: str = tool.description or ''
+                # Convert JSON schema to Pydantic model for argument validation
                 args_schema: Type[BaseModel] = jsonschema_to_pydantic(
                     tool.inputSchema
                 )
@@ -120,12 +158,17 @@ async def get_mcp_server_tools(
                     )
 
                 async def _arun(self, **kwargs: Any) -> Any:
+                    """
+                    Asynchronously executes the tool with given arguments.
+                    Logs input/output and handles errors.
+                    """
                     logger.info(f'MCP tool "{server_name}"/"{tool.name}"'
                                 f' received input:', kwargs)
                     result = await session.call_tool(self.name, kwargs)
                     if result.isError:
                         raise ToolException(result.content)
 
+                    # Log result size for monitoring
                     size = asizeof.asizeof(result.content)
                     logger.info(f'MCP tool "{server_name}"/"{tool.name}" '
                                 f'received result (size: {size})')
@@ -133,6 +176,7 @@ async def get_mcp_server_tools(
 
             langchain_tools.append(McpToLangChainAdapter())
 
+        # Log available tools for debugging
         logger.info(f'MCP server "{server_name}": {len(langchain_tools)} '
                     f'tool(s) available:')
         for tool in langchain_tools:
@@ -144,6 +188,7 @@ async def get_mcp_server_tools(
     return langchain_tools
 
 
+# Type hint for cleanup function
 McpServerCleanupFn = Callable[[], Awaitable[None]]
 
 
@@ -181,9 +226,11 @@ async def convert_mcp_to_langchain_tools(
         await cleanup()
     """
 
-    # Concurrently initialize all the MCP servers
+    # Initialize AsyncExitStack for managing multiple server lifecycles
     stdio_transports: List[StdioTransport] = []
     async_exit_stack = AsyncExitStack()
+
+    # Spawn all MCP servers concurrently
     for server_name, server_config in server_configs.items():
         # NOTE: the following `await` only blocks until the server subprocess
         # is spawned, i.e. after returning from the `await`, the spawned
@@ -197,6 +244,7 @@ async def convert_mcp_to_langchain_tools(
         )
         stdio_transports.append(stdio_transport)
 
+    # Convert tools from each server to LangChain format
     langchain_tools: List[BaseTool] = []
     for (server_name, server_config), stdio_transport in zip(
         server_configs.items(),
@@ -211,11 +259,12 @@ async def convert_mcp_to_langchain_tools(
         )
         langchain_tools.extend(tools)
 
-    # Define a cleanup callback to set cleanup_event and signal that
-    # it is time to clean up the resources
-    async def mcp_cleanup() -> None:    
+    # Define a cleanup function to properly shut down all servers
+    async def mcp_cleanup() -> None:
+        """Closes all server connections and cleans up resources"""
         await async_exit_stack.aclose()
 
+    # Log summary of initialized tools
     logger.info(f'MCP servers initialized: {len(langchain_tools)} tool(s) '
                 f'available in total')
     for tool in langchain_tools:
