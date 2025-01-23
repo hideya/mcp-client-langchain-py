@@ -64,8 +64,8 @@ async def spawn_mcp_server_and_get_transport(
         Exception: If server spawning fails
     """
     try:
-        logger.info(f'MCP server "{server_name}": initializing with:',
-                    server_config)
+        logger.info(f'MCP server "{server_name}": '
+                    f'initializing with: {server_config}')
 
         # NOTE: `uv` and `npx` seem to require PATH to be set.
         # To avoid confusion, it was decided to automatically append it
@@ -163,7 +163,7 @@ async def get_mcp_server_tools(
                     Logs input/output and handles errors.
                     """
                     logger.info(f'MCP tool "{server_name}"/"{tool.name}"'
-                                f' received input:', kwargs)
+                                f' received input: {kwargs}')
                     result = await session.call_tool(self.name, kwargs)
                     if result.isError:
                         raise ToolException(result.content)
