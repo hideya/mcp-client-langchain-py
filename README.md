@@ -17,8 +17,8 @@ A typescript version of this MCP client is available
 ## Prerequisites
 
 - Python 3.11+
-- [`uv`](https://docs.astral.sh/uv/) installed to run Python-based MCP servers
-- npm 7+ to run TypeScript-based MCP servers
+- [`uv` (`uvx`)](https://docs.astral.sh/uv/) installed to run Python-based MCP servers
+- npm 7+ (`npx`) to run Node.js-based MCP servers
 - API keys from [Anthropic](https://console.anthropic.com/settings/keys),
   [OpenAI](https://platform.openai.com/api-keys), and/or
   [Groq](https://console.groq.com/keys)
