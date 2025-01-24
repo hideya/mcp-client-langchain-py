@@ -14,10 +14,11 @@ LLMs from Anthropic, OpenAI and Groq are currently supported.
 A typescript version of this MCP client is available
 [here](https://github.com/hideya/mcp-client-langchain-ts)
 
-## Requirements
+## Prerequisites
 
 - Python 3.11+
-- [`uv`](https://docs.astral.sh/uv/) installation
+- [`uv` (`uvx`)](https://docs.astral.sh/uv/) installed to run Python-based MCP servers
+- npm 7+ (`npx`) to run Node.js-based MCP servers
 - API keys from [Anthropic](https://console.anthropic.com/settings/keys),
   [OpenAI](https://platform.openai.com/api-keys), and/or
   [Groq](https://console.groq.com/keys)
