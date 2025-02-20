@@ -552,7 +552,7 @@ wheels = [
 
 [[package]]
 name = "langchain-mcp-tools"
-version = "0.1.5"
+version = "0.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsonschema-pydantic" },
@@ -563,12 +563,11 @@ dependencies = [
     { name = "langgraph" },
     { name = "mcp" },
     { name = "pyjson5" },
-    { name = "pympler" },
     { name = "python-dotenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/85/6d274bcdb4ec8bbf694f733489d3bd5b277c8e5697c921ae0dd576988572/langchain_mcp_tools-0.1.5.tar.gz", hash = "sha256:36ce67c89ad57e9a53785adedc0bdd5b90c7053a471a4e5c245c152ebdbf465d", size = 9782 }
+sdist = { url = "https://files.pythonhosted.org/packages/61/07/31144ee8af31967b7328e6276f8042642fb02742fd9c7223790440bb7dab/langchain_mcp_tools-0.1.6.tar.gz", hash = "sha256:b58b603c96369907a2ebdd5889164f9080802f929b9a3ab35beeb0303c741cc6", size = 9893 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/ce/c3c1127c24ccf49ea77839762c4d61c82d329c2f8d6c8caca01181d73231/langchain_mcp_tools-0.1.5-py3-none-any.whl", hash = "sha256:21db56e9feba4f050e23bdd01b3911a51f8c6c1eae255ce67744aad93af0a018", size = 7788 },
+    { url = "https://files.pythonhosted.org/packages/c5/a4/f588e30ca7ecf5af40ecedccfaf2ff2b99a05cdee9e7462780832d056a0b/langchain_mcp_tools-0.1.6-py3-none-any.whl", hash = "sha256:38e73032a7959e6acc18d1bd3d5c8460cb0a9fd0e051833d64aecb626c84a5b1", size = 7914 },
 ]
 
 [[package]]
@@ -674,7 +673,7 @@ wheels = [
 
 [[package]]
 name = "mcp-client-langchain-py"
-version = "0.1.5"
+version = "0.1.6"
 source = { virtual = "." }
 dependencies = [
     { name = "jsonschema-pydantic" },
@@ -696,7 +695,7 @@ requires-dist = [
     { name = "langchain", specifier = ">=0.3.14" },
     { name = "langchain-anthropic", specifier = ">=0.3.1" },
     { name = "langchain-groq", specifier = ">=0.2.3" },
-    { name = "langchain-mcp-tools", specifier = ">=0.1.5" },
+    { name = "langchain-mcp-tools", specifier = ">=0.1.6" },
     { name = "langchain-openai", specifier = ">=0.3.0" },
     { name = "langgraph", specifier = ">=0.2.62" },
     { name = "mcp", specifier = ">=1.2.0" },
