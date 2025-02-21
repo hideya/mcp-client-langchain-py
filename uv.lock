@@ -552,22 +552,18 @@ wheels = [
 
 [[package]]
 name = "langchain-mcp-tools"
-version = "0.1.6"
+version = "0.1.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsonschema-pydantic" },
     { name = "langchain" },
-    { name = "langchain-anthropic" },
-    { name = "langchain-groq" },
-    { name = "langchain-openai" },
-    { name = "langgraph" },
     { name = "mcp" },
     { name = "pyjson5" },
     { name = "python-dotenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/61/07/31144ee8af31967b7328e6276f8042642fb02742fd9c7223790440bb7dab/langchain_mcp_tools-0.1.6.tar.gz", hash = "sha256:b58b603c96369907a2ebdd5889164f9080802f929b9a3ab35beeb0303c741cc6", size = 9893 }
+sdist = { url = "https://files.pythonhosted.org/packages/2d/6d/f65d17b7ca032b6fa6a2003ca147566a4d2b71ef8a946f26bb7b4fc12e15/langchain_mcp_tools-0.1.7.tar.gz", hash = "sha256:0876a4aec7a69dd82207cd3e358046b0efa1fdf7c19b6f4fc160dd851eddd89c", size = 9916 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/a4/f588e30ca7ecf5af40ecedccfaf2ff2b99a05cdee9e7462780832d056a0b/langchain_mcp_tools-0.1.6-py3-none-any.whl", hash = "sha256:38e73032a7959e6acc18d1bd3d5c8460cb0a9fd0e051833d64aecb626c84a5b1", size = 7914 },
+    { url = "https://files.pythonhosted.org/packages/51/77/2d395a6792484d0e241cc40e3c00b4e9fd1a5105b7270d74ebce248f9d98/langchain_mcp_tools-0.1.7-py3-none-any.whl", hash = "sha256:78d33b59ade4a7130a728cdc06251818ea8b47adbf9551dd38fa3e867bb2257f", size = 7928 },
 ]
 
 [[package]]
@@ -673,7 +669,7 @@ wheels = [
 
 [[package]]
 name = "mcp-client-langchain-py"
-version = "0.1.6"
+version = "0.1.7"
 source = { virtual = "." }
 dependencies = [
     { name = "jsonschema-pydantic" },
@@ -695,7 +691,7 @@ requires-dist = [
     { name = "langchain", specifier = ">=0.3.14" },
     { name = "langchain-anthropic", specifier = ">=0.3.1" },
     { name = "langchain-groq", specifier = ">=0.2.3" },
-    { name = "langchain-mcp-tools", specifier = ">=0.1.6" },
+    { name = "langchain-mcp-tools", specifier = ">=0.1.7" },
     { name = "langchain-openai", specifier = ">=0.3.0" },
     { name = "langgraph", specifier = ">=0.2.62" },
     { name = "mcp", specifier = ">=1.2.0" },
