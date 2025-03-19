@@ -210,12 +210,10 @@ async def init_react_agent(
     llm_config = config['llm']
     logger.info(f'Initializing model... {json.dumps(llm_config, indent=2)}\n')
 
-    llm = init_chat_model(
-        model=llm_config['model'],
-        model_provider=llm_config['model_provider'],
-        temperature=llm_config['temperature'],
-        max_tokens=llm_config['max_tokens'],
-    )
+    filtered_config = {
+        k: v for k, v in llm_config.items() if k not in ['system_prompt']
+    }
+    llm = init_chat_model(**filtered_config)
 
     mcp_configs = config['mcp_servers']
     logger.info(f'Initializing {len(mcp_configs)} MCP server(s)...\n')
