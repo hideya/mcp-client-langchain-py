@@ -552,7 +552,7 @@ wheels = [
 
 [[package]]
 name = "langchain-mcp-tools"
-version = "0.1.8"
+version = "0.1.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsonschema-pydantic" },
@@ -561,9 +561,9 @@ dependencies = [
     { name = "pyjson5" },
     { name = "python-dotenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fb/ab/38a8e169a3b462059b04c55012e54b350609fa33dad86147ef04a7d956ab/langchain_mcp_tools-0.1.8.tar.gz", hash = "sha256:391c0fb7f3ff10835b31df24002fcf4227e9f74d1dfc69caa0f0798ec8b1a8fe", size = 10138 }
+sdist = { url = "https://files.pythonhosted.org/packages/c9/ce/0159c088c87028600b25e7f7bfc18a5539bbb915e866021837f21e084bad/langchain_mcp_tools-0.1.9.tar.gz", hash = "sha256:ce4f397cec5f0712ec5375871851db5aa7d65a570170a299ca2a41e4044edd14", size = 10237 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fe/8b/0917700bac245a0474fca46507c089df0694fa54d08a713bbf20d278306e/langchain_mcp_tools-0.1.8-py3-none-any.whl", hash = "sha256:c1e4f6bf79908952f541f99938216718a731c9430a53016fad664a73eb80b3e4", size = 8119 },
+    { url = "https://files.pythonhosted.org/packages/31/aa/74ce6cdcdf34869de4dfdfb91732e4cb9812144ea36c0904e2c4f91b7c87/langchain_mcp_tools-0.1.9-py3-none-any.whl", hash = "sha256:907a6e83f5ddc7b0812bdcf6f76ee64eb87b269a38ba42079fca0311dee51ca1", size = 8157 },
 ]
 
 [[package]]
@@ -669,7 +669,7 @@ wheels = [
 
 [[package]]
 name = "mcp-client-langchain-py"
-version = "0.1.8"
+version = "0.1.9"
 source = { virtual = "." }
 dependencies = [
     { name = "jsonschema-pydantic" },
@@ -691,7 +691,7 @@ requires-dist = [
     { name = "langchain", specifier = ">=0.3.14" },
     { name = "langchain-anthropic", specifier = ">=0.3.1" },
     { name = "langchain-groq", specifier = ">=0.2.3" },
-    { name = "langchain-mcp-tools", specifier = ">=0.1.8" },
+    { name = "langchain-mcp-tools", specifier = ">=0.1.9" },
     { name = "langchain-openai", specifier = ">=0.3.0" },
     { name = "langgraph", specifier = ">=0.2.62" },
     { name = "mcp", specifier = ">=1.2.0" },
