@@ -215,11 +215,11 @@ async def init_react_agent(
     }
     llm = init_chat_model(**filtered_config)
 
-    mcp_configs = config['mcp_servers']
-    logger.info(f'Initializing {len(mcp_configs)} MCP server(s)...\n')
+    mcp_servers = config['mcp_servers']
+    logger.info(f'Initializing {len(mcp_servers)} MCP server(s)...\n')
 
     tools, mcp_cleanup = await convert_mcp_to_langchain_tools(
-        mcp_configs,
+        mcp_servers,
         logger
     )
 
