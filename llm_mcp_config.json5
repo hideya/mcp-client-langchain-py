@@ -53,10 +53,10 @@
                 "@h1deya/mcp-server-weather"
             ]
         },
-        // // https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer
-        // "puppeteer": {
+        // // https://github.com/microsoft/playwright-mcp
+        // "playwright": {
         //     "command": "npx",
-        //     "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+        //     "args": ["@playwright/mcp@latest"]
         // },
         // // https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search
         // "brave-search": {
