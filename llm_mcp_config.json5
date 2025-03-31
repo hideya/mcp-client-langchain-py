@@ -40,16 +40,11 @@
                 "."
             ]
         },
-        // NOTE: somehow, a server run by uvx was no longer shutting down
-        // cleanly, whereas it used to do so.  While investigating the
-        // cause, the following has been commented out.
-        // See this Issue for details:
-        //   https://github.com/hideya/langchain-mcp-tools-py/issues/22
-        // // https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
-        // "fetch": {
-        //     "command": "uvx",
-        //     "args": ["mcp-server-fetch"]
-        // },
+        // https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
+        "fetch": {
+            "command": "uvx",
+            "args": ["mcp-server-fetch"]
+        },
         // https://github.com/modelcontextprotocol/quickstart-resources/tree/main/weather-server-python
         "weather": {
             "command": "npx",
@@ -58,10 +53,10 @@
                 "@h1deya/mcp-server-weather"
             ]
         },
-        // // https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer
-        // "puppeteer": {
+        // // https://github.com/microsoft/playwright-mcp
+        // "playwright": {
         //     "command": "npx",
-        //     "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+        //     "args": ["@playwright/mcp@latest"]
         // },
         // // https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search
         // "brave-search": {
