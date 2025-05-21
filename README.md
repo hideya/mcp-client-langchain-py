@@ -1,13 +1,13 @@
-# MCP Client Using LangChain / Python [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/hideya/langchain-mcp-tools-py/blob/main/LICENSE)
+# Simple CLI MCP Client Using LangChain / Python [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/hideya/langchain-mcp-tools-py/blob/main/LICENSE)
 
 This simple [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
-client demonstrates the use of MCP server tools by LangChain ReAct Agent.
+client with command line interface demonstrates the use of MCP server tools by the LangChain ReAct Agent.
 
 It leverages a utility function `convert_mcp_to_langchain_tools()` from
 [`langchain_mcp_tools`](https://pypi.org/project/langchain-mcp-tools/).  
 This function handles parallel initialization of specified multiple MCP servers
 and converts their available tools into a list of LangChain-compatible tools
-([List[BaseTool]](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.base.BaseTool.html#langchain_core.tools.base.BaseTool)).
+([list[BaseTool]](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.base.BaseTool.html#langchain_core.tools.base.BaseTool)).
 
 LLMs from Anthropic, OpenAI and Groq are currently supported.
 

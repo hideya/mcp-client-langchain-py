@@ -1,14 +1,14 @@
 import pyjson5 as json5
 from pathlib import Path
-from typing import TypedDict, Optional, Any
+from typing import TypedDict, Any
 
 
 class LLMConfig(TypedDict):
     """Type definition for LLM configuration."""
     model_provider: str
-    model: Optional[str]
-    temperature: Optional[float]
-    system_prompt: Optional[str]
+    model: str | None
+    temperature: float | None
+    system_prompt: str | None
 
 
 class ConfigError(Exception):
@@ -33,7 +33,7 @@ def load_config(config_path: str):
     if not config_file.exists():
         raise ConfigFileNotFoundError(f"Config file {config_path} not found")
 
-    with open(config_file, 'r', encoding='utf-8') as f:
+    with open(config_file, "r", encoding="utf-8") as f:
         config: dict[str, Any] = json5.load(f)
 
     return config
