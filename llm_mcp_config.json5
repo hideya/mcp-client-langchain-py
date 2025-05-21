@@ -43,7 +43,9 @@
         // https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
         "fetch": {
             "command": "uvx",
-            "args": ["mcp-server-fetch"]
+            "args": [
+                "mcp-server-fetch"
+            ]
         },
         // https://github.com/modelcontextprotocol/quickstart-resources/tree/main/weather-server-python
         "weather": {
@@ -53,11 +55,14 @@
                 "@h1deya/mcp-server-weather"
             ]
         },
-        // // https://github.com/microsoft/playwright-mcp
-        // "playwright": {
-        //     "command": "npx",
-        //     "args": ["@playwright/mcp@latest"]
-        // },
+        // https://github.com/microsoft/playwright-mcp
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@playwright/mcp@latest"
+            ]
+        },
         // // https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search
         // "brave-search": {
         //     "command": "npx",
