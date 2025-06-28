@@ -85,6 +85,12 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="run with verbose logging"
     )
+    parser.add_argument(
+        "--log-dir",
+        type=Path,
+        help="directory to store MCP server logs (default: current directory)",
+        metavar="PATH"
+    )
     return parser.parse_args()
 
 
@@ -204,7 +210,8 @@ async def handle_conversation(
 
 async def init_react_agent(
     config: ConfigType,
-    logger: logging.Logger
+    logger: logging.Logger,
+    log_dir: Path | None = None
 ) -> tuple[Runnable, list[BaseMessage], McpServerCleanupFn, ExitStack]:
     """Initialize and configure a ReAct agent for conversation handling.
 
@@ -213,9 +220,11 @@ async def init_react_agent(
             MCP server settings
         logger (logging.Logger): Logger instance for initialization
             status updates
+        log_dir (Path | None): Directory to store MCP server logs.
+            If None, uses current directory.
 
     Returns:
-        tuple[Runnable, list[BaseMessage], McpServerCleanupFn]:
+        tuple[Runnable, list[BaseMessage], McpServerCleanupFn, ExitStack]:
             Returns a tuple containing:
             - Configured ReAct agent ready for conversation
             - Initial message list (empty or with system prompt)
@@ -233,24 +242,30 @@ async def init_react_agent(
     mcp_servers = config["mcp_servers"]
     logger.info(f"Initializing {len(mcp_servers)} MCP server(s)...\n")
     
-    # Set a file-like object to which MCP server's stderr is redirected
-    # NOTE: Why the key name `errlog` for `server_config` was chosen:
-    # Unlike TypeScript SDK's `StdioServerParameters`, the Python
-    # SDK's `StdioServerParameters` doesn't include `stderr: int`.
-    # Instead, it calls `stdio_client()` with a separate argument
-    # `errlog: TextIO`.  I once included `stderr: int` for
-    # compatibility with the TypeScript version, but decided to
-    # follow the Python SDK more closely.
+    # Set up log directory and files for MCP servers
     log_file_exit_stack = ExitStack()
+    
+    # Create log directory if specified
+    if log_dir is not None:
+        log_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"MCP server logs will be stored in: {log_dir.absolute()}")
+    
     for server_name in mcp_servers:
         server_config = mcp_servers[server_name]
         # Skip URL-based servers (no command)
         if "command" not in server_config:
             continue
-        log_path = f"mcp-server-{server_name}.log"
+        
+        # Determine log file path
+        if log_dir is not None:
+            log_path = log_dir / f"mcp-server-{server_name}.log"
+        else:
+            log_path = Path(f"mcp-server-{server_name}.log")
+        
         log_file = open(log_path, "w")
         server_config["errlog"] = log_file
         log_file_exit_stack.callback(log_file.close)
+        logger.debug(f"Logging {server_name} to: {log_path}")
 
     tools, mcp_cleanup = await convert_mcp_to_langchain_tools(
         mcp_servers,
@@ -295,7 +310,7 @@ async def run() -> None:
         )
 
         agent, messages, mcp_cleanup, log_file_exit_stack = (
-            await init_react_agent(config, logger)
+            await init_react_agent(config, logger, args.log_dir)
         )
 
         await handle_conversation(

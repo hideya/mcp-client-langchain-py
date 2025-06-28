@@ -117,12 +117,12 @@ It takes a while on the first run.
 
 Run in verbose mode:
 ```bash
-make start-v
+make start -- -v
 ```
 
 See commandline options:
 ```bash
-make start-h
+make start -- -h
 ```
 
 At the prompt, you can simply press Enter to use example queries that perform MCP server tool invocations.
