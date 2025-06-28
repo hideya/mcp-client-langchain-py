@@ -769,9 +769,9 @@ wheels = [
 ]
 
 [[package]]
-name = "mcp-client-langchain-py"
+name = "mcp-try-cli"
 version = "0.2.7"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "langchain" },
     { name = "langchain-anthropic" },

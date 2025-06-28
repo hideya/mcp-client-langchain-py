@@ -1,9 +1,23 @@
 [project]
-name = "mcp-client-langchain-py"
-version = "0.2.7"
-description = "MCP Client Using LangChain / Python"
+name = "mcp-try-cli"
+version = "0.0.1"
+description = "Simple CLI MCP Client to quickly test and explore MCP servers from the command line"
 readme = "README.md"
 requires-python = ">=3.11"
+keywords = [
+    "mcp",
+    "cli",
+    "try",
+    "test",
+    "model-context-protocol",
+    "langchain",
+    "tools",
+    "python",
+    "client",
+    "simple",
+    "quick",
+    "explore",
+]
 dependencies = [
     "langchain-mcp-tools>=0.2.7",
     "langchain>=0.3.26",
@@ -16,3 +30,14 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "websockets>=15.0.1",
 ]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/hideya/mcp-client-langchain-py/issues"
+"Source Code" = "https://github.com/hideya/mcp-client-langchain-py"
+
+[project.scripts]
+mcp-try-cli = "mcp_try_cli.cli_chat:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
