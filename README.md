@@ -81,7 +81,7 @@ a utility function `convert_mcp_to_langchain_tools()` from [`langchain_mcp_tools
 
 ## Building from Source
 
-See [README_DEV.md](https://github.com/hideya/mcp-client-langchain-ts/blob/main/README_DEV.md) for details.
+See [README_DEV.md](https://github.com/hideya/mcp-client-langchain-py/blob/main/README_DEV.md) for details.
 
 ## Features
 
