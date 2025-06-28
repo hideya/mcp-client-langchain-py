@@ -5,6 +5,7 @@ from enum import Enum
 import json
 import logging
 import sys
+import time
 from pathlib import Path
 from contextlib import ExitStack
 from typing import (
@@ -29,8 +30,6 @@ try:
         convert_mcp_to_langchain_tools,
         McpServerCleanupFn,
     )
-    from watchdog.observers import Observer
-    from watchdog.events import FileSystemEventHandler
 except ImportError as e:
     print(f"\nError: Required package not found: {e}")
     print("Please ensure all required packages are installed\n")
