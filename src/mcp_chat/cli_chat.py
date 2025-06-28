@@ -34,7 +34,10 @@ except ImportError as e:
     sys.exit(1)
 
 # Local application imports
-from .config_loader import load_config
+try:
+    from .config_loader import load_config  # Package import
+except ImportError:
+    from config_loader import load_config  # Direct script import
 
 # Type definitions
 ConfigType = dict[str, Any]
