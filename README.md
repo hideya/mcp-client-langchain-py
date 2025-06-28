@@ -3,7 +3,7 @@
 
 **Quickly test and explore MCP servers from the command line!**
 
-A simple, text-based CLI client for [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers built with LangChain and TypeScript.  
+A simple, text-based CLI client for [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers built with LangChain and Python.  
 Suitable for testing MCP servers, exploring their capabilities, and prototyping integrations.
 
 Internally it uses [LangChain ReAct Agent](https://langchain-ai.github.io/langgraph/reference/agents/) and
