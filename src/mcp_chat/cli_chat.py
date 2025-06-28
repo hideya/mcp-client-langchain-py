@@ -137,46 +137,27 @@ class LogFileHandler(FileSystemEventHandler):
         if self.log_path.exists():
             self.last_size = self.log_path.stat().st_size
             print(f"[DEBUG] File exists, initial size: {self.last_size}")
+            
+            # Debug: read current content if any
+            if self.last_size > 0:
+                try:
+                    with open(self.log_path, 'r', encoding='utf-8', errors='replace') as f:
+                        content = f.read()
+                        print(f"[DEBUG] Current content: {repr(content[:100])}")
+                except Exception as e:
+                    print(f"[DEBUG] Could not read current content: {e}")
         else:
             print(f"[DEBUG] File does not exist yet: {self.log_path}")
     
     def on_any_event(self, event):
-        """Debug: catch all events and check for our log file."""
-        print(f"[DEBUG] Event detected: {event.event_type} on {event.src_path}")
-        
-        # Check if this event is for our log file
+        """Handle all events and check for our log file."""
+        # Only process file events for our target file
         if not event.is_directory:
             event_path = Path(event.src_path).resolve()
             if event_path == self.log_path:
-                print(f"[DEBUG] Our log file {self.server_name} was {event.event_type}")
+                print(f"[DEBUG] Log file {self.server_name} was {event.event_type}")
                 if event.event_type in ['modified', 'created']:
                     self._read_new_content()
-    
-    def on_created(self, event):
-        """Handle file creation events."""
-        print(f"[DEBUG] on_created called: {event.src_path}")
-        if not event.is_directory:
-            event_path = Path(event.src_path).resolve()
-            if event_path == self.log_path:
-                print(f"[DEBUG] Our log file {self.server_name} was created!")
-                self.last_size = 0  # Reset since it's a new file
-                self._read_new_content()
-    
-    def on_modified(self, event):
-        """Handle file modification events."""
-        print(f"[DEBUG] on_modified called: {event.src_path}, is_directory: {event.is_directory}")
-        
-        if event.is_directory:
-            return
-            
-        # Check if this is our target log file
-        event_path = Path(event.src_path).resolve()
-        print(f"[DEBUG] Comparing {event_path} with {self.log_path}")
-        if event_path == self.log_path:
-            print(f"[DEBUG] Match! Reading new content for {self.server_name}")
-            self._read_new_content()
-        else:
-            print(f"[DEBUG] No match for {self.server_name}")
     
     def _read_new_content(self):
         """Read and print new content from the log file."""
@@ -184,9 +165,19 @@ class LogFileHandler(FileSystemEventHandler):
             if not self.log_path.exists():
                 print(f"[DEBUG] File {self.log_path} does not exist")
                 return
-                
+            
+            # Force a fresh stat to avoid caching issues
+            import time
+            time.sleep(0.01)  # Small delay to ensure file is written
+            
             current_size = self.log_path.stat().st_size
             print(f"[DEBUG] Current size: {current_size}, last size: {self.last_size}")
+            
+            # Special case: if last_size was 0 but file now has content,
+            # this means the file was just written to for the first time
+            if self.last_size == 0 and current_size > 0:
+                print(f"[DEBUG] File was just written to for the first time, reading all content")
+                self.last_size = 0  # Read everything
             
             if current_size <= self.last_size:
                 print(f"[DEBUG] No new content (current: {current_size}, last: {self.last_size})")
@@ -362,7 +353,7 @@ async def init_react_agent(
         else:
             log_path = Path(f"mcp-server-{server_name}.log")
         
-        log_file = open(log_path, "w")
+        log_file = open(log_path, "w", buffering=1)  # Line buffering
         server_config["errlog"] = log_file
         log_file_exit_stack.callback(log_file.close)
         logger.debug(f"Logging {server_name} to: {log_path}")
