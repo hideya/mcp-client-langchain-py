@@ -78,12 +78,18 @@ A TypeScript version of this MCP client is available
 
 ## Setup
 
-1. Install dependencies:
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/hideya/mcp-client-langchain-py.git
+    cd mcp-client-langchain-py
+    ```
+
+2. Install dependencies:
     ```bash
     make install
     ```
 
-2. Setup API keys:
+3. Setup API keys:
     ```bash
     cp .env.template .env
     ```
@@ -91,7 +97,7 @@ A TypeScript version of this MCP client is available
     - `.gitignore` is configured to ignore `.env`
       to prevent accidental commits of the credentials.
 
-3. Configure LLM and MCP Servers settings `llm_mcp_config.json5` as needed.
+4. Configure LLM and MCP Servers settings `llm_mcp_config.json5` as needed.
 
     - [The configuration file format](https://github.com/hideya/mcp-client-langchain-ts/blob/main/llm_mcp_config.json5)
       for MCP servers follows the same structure as

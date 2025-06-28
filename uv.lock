@@ -770,7 +770,7 @@ wheels = [
 
 [[package]]
 name = "mcp-chat"
-version = "0.0.7"
+version = "0.2.7"
 source = { editable = "." }
 dependencies = [
     { name = "langchain" },
