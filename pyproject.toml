@@ -1,6 +1,6 @@
 [project]
 name = "mcp-chat"
-version = "0.0.4"
+version = "0.0.5"
 description = "Simple CLI MCP Client to quickly test and explore MCP servers from the command line"
 readme = "README.md"
 requires-python = ">=3.11"

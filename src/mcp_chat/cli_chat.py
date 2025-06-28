@@ -237,46 +237,16 @@ async def run() -> None:
     """Main async function to set up and run the simple chat app."""
     mcp_cleanup: McpServerCleanupFn | None = None
     try:
-        # Debug: Check working directory and .env file existence
-        import os
-        from pathlib import Path
-        
-        print(f"DEBUG: Current working directory: {os.getcwd()}")
-        env_file = Path(".env")
-        print(f"DEBUG: .env file exists: {env_file.exists()}")
-        if env_file.exists():
-            print(f"DEBUG: .env file path: {env_file.absolute()}")
-        
-        # Try to load .env file with multiple strategies
-        from pathlib import Path
-        
-        # Strategy 1: Try current working directory
+        # Load environment variables from .env file
+        # Workaround: For some reason, load_dotenv() without arguments
+        # sometimes fails to find the .env file in the current directory
+        # when installed via PyPI.
+        # Explicitly specifying the path works reliably.
         env_file = Path(".env")
         if env_file.exists():
             load_dotenv(env_file)
-            print(f"DEBUG: Loaded .env from: {env_file.absolute()}")
         else:
-            # Strategy 2: Try default load_dotenv behavior
-            result = load_dotenv()
-            print(f"DEBUG: load_dotenv() default result: {result}")
-            
-            # Strategy 3: Try looking in parent directories
-            current_dir = Path.cwd()
-            for parent in [current_dir] + list(current_dir.parents):
-                potential_env = parent / ".env"
-                if potential_env.exists():
-                    load_dotenv(potential_env)
-                    print(f"DEBUG: Loaded .env from parent: {potential_env}")
-                    break
-        
-        # Debug: Check if environment variables are loaded
-        openai_key = os.getenv('OPENAI_API_KEY')
-        print(f"DEBUG: OPENAI_API_KEY loaded: {openai_key is not None}")
-        if openai_key:
-            print(f"DEBUG: Key length: {len(openai_key)}")
-            print(f"DEBUG: Key starts with: {openai_key[:10]}...")
-        else:
-            print("DEBUG: OPENAI_API_KEY is None or empty")
+            load_dotenv()  # Fallback to default behavior
         
         args = parse_arguments()
         logger = init_logger(args.verbose)
