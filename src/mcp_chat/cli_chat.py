@@ -124,11 +124,12 @@ def clear_line() -> None:
 class LogFileHandler(FileSystemEventHandler):
     """Event handler for MCP server log files using watchdog."""
     
-    def __init__(self, log_path: Path, server_name: str):
+    def __init__(self, log_path: Path, server_name: str, log_file_handle):
         super().__init__()
         # Store the absolute path to ensure proper comparison
         self.log_path = log_path.resolve()
         self.server_name = server_name
+        self.log_file_handle = log_file_handle  # Shared file handle
         self.last_size = 0
         
         print(f"[DEBUG] LogFileHandler created for {server_name}: {self.log_path}")
@@ -160,18 +161,29 @@ class LogFileHandler(FileSystemEventHandler):
                     self._read_new_content()
     
     def _read_new_content(self):
-        """Read and print new content from the log file."""
+        """Read and print new content from the log file using shared handle."""
         try:
             if not self.log_path.exists():
                 print(f"[DEBUG] File {self.log_path} does not exist")
                 return
             
-            # Force a fresh stat to avoid caching issues
+            # Force flush of the write handle to ensure data is written
+            self.log_file_handle.flush()
+            
+            # Force a longer delay to ensure file is written and flushed
             import time
-            time.sleep(0.01)  # Small delay to ensure file is written
+            time.sleep(0.1)  # Increased delay to 100ms
             
             current_size = self.log_path.stat().st_size
             print(f"[DEBUG] Current size: {current_size}, last size: {self.last_size}")
+            
+            # Debug: Let's also check the file content directly
+            try:
+                with open(self.log_path, 'r', encoding='utf-8', errors='replace') as f:
+                    actual_content = f.read()
+                    print(f"[DEBUG] Actual file content length: {len(actual_content)}, content: {repr(actual_content[:100])}")
+            except Exception as e:
+                print(f"[DEBUG] Could not read file content for debugging: {e}")
             
             # Special case: if last_size was 0 but file now has content,
             # this means the file was just written to for the first time
@@ -359,7 +371,7 @@ async def init_react_agent(
         logger.debug(f"Logging {server_name} to: {log_path}")
         
         # Set up watchdog monitoring for this log file
-        log_handler = LogFileHandler(log_path, server_name)
+        log_handler = LogFileHandler(log_path, server_name, log_file)
         watch_dir = str(log_path.parent)
         print(f"[DEBUG] Scheduling observer for {server_name}: watching {watch_dir}")
         observer.schedule(log_handler, path=watch_dir, recursive=False)
