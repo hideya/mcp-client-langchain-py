@@ -126,18 +126,19 @@ class LogFileHandler(FileSystemEventHandler):
     
     def __init__(self, log_path: Path, server_name: str):
         super().__init__()
-        self.log_path = log_path
+        # Store the absolute path to ensure proper comparison
+        self.log_path = log_path.resolve()
         self.server_name = server_name
         self.last_size = 0
         
-        print(f"[DEBUG] LogFileHandler created for {server_name}: {log_path}")
+        print(f"[DEBUG] LogFileHandler created for {server_name}: {self.log_path}")
         
         # Initialize last_size if file already exists
         if self.log_path.exists():
             self.last_size = self.log_path.stat().st_size
             print(f"[DEBUG] File exists, initial size: {self.last_size}")
         else:
-            print(f"[DEBUG] File does not exist yet: {log_path}")
+            print(f"[DEBUG] File does not exist yet: {self.log_path}")
     
     def on_any_event(self, event):
         """Debug: catch all events and check for our log file."""
@@ -145,7 +146,7 @@ class LogFileHandler(FileSystemEventHandler):
         
         # Check if this event is for our log file
         if not event.is_directory:
-            event_path = Path(event.src_path)
+            event_path = Path(event.src_path).resolve()
             if event_path == self.log_path:
                 print(f"[DEBUG] Our log file {self.server_name} was {event.event_type}")
                 if event.event_type in ['modified', 'created']:
@@ -155,7 +156,7 @@ class LogFileHandler(FileSystemEventHandler):
         """Handle file creation events."""
         print(f"[DEBUG] on_created called: {event.src_path}")
         if not event.is_directory:
-            event_path = Path(event.src_path)
+            event_path = Path(event.src_path).resolve()
             if event_path == self.log_path:
                 print(f"[DEBUG] Our log file {self.server_name} was created!")
                 self.last_size = 0  # Reset since it's a new file
@@ -169,7 +170,7 @@ class LogFileHandler(FileSystemEventHandler):
             return
             
         # Check if this is our target log file
-        event_path = Path(event.src_path)
+        event_path = Path(event.src_path).resolve()
         print(f"[DEBUG] Comparing {event_path} with {self.log_path}")
         if event_path == self.log_path:
             print(f"[DEBUG] Match! Reading new content for {self.server_name}")
