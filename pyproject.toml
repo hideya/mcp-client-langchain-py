@@ -29,6 +29,7 @@ dependencies = [
     "pyjson5>=1.6.8",
     "python-dotenv>=1.0.1",
     "websockets>=15.0.1",
+    "watchdog>=6.0.0",
 ]
 
 [project.urls]

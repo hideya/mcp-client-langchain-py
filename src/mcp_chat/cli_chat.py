@@ -7,8 +7,6 @@ import logging
 import sys
 from pathlib import Path
 from contextlib import ExitStack
-import threading
-import time
 from typing import (
     Any,
     cast,
@@ -31,6 +29,8 @@ try:
         convert_mcp_to_langchain_tools,
         McpServerCleanupFn,
     )
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
 except ImportError as e:
     print(f"\nError: Required package not found: {e}")
     print("Please ensure all required packages are installed\n")
@@ -121,53 +121,54 @@ def clear_line() -> None:
     print("\x1b[1A\x1b[2K", end="")
 
 
-def add_log_file_watcher(log_path: Path, server_name: str) -> threading.Thread:
-    """Add a log file watcher that prints new log content to console.
+class LogFileHandler(FileSystemEventHandler):
+    """Event handler for MCP server log files using watchdog."""
     
-    Args:
-        log_path (Path): Path to the log file to watch
-        server_name (str): Name of the MCP server for display purposes
+    def __init__(self, log_path: Path, server_name: str):
+        super().__init__()
+        self.log_path = log_path
+        self.server_name = server_name
+        self.last_size = 0
         
-    Returns:
-        threading.Thread: The watcher thread that can be stopped
-    """
-    def watch_file():
-        """Watch the log file for changes and print new content."""
-        try:
-            # Initialize last size
-            if log_path.exists():
-                last_size = log_path.stat().st_size
-            else:
-                last_size = 0
-                
-            while not getattr(threading.current_thread(), '_stop_event', threading.Event()).is_set():
-                try:
-                    if log_path.exists():
-                        current_size = log_path.stat().st_size
-                        if current_size > last_size:
-                            # Read new content
-                            with open(log_path, 'r', encoding='utf-8', errors='replace') as f:
-                                f.seek(last_size)
-                                new_content = f.read(current_size - last_size)
-                                if new_content.strip():  # Only print if there's actual content
-                                    print_colored(
-                                        f'[MCP Server Log: "{server_name}"] {new_content.strip()}',
-                                        Colors.GREEN
-                                    )
-                            last_size = current_size
-                    time.sleep(0.1)  # Check every 100ms
-                except (OSError, IOError) as e:
-                    # File might be temporarily unavailable, continue watching
-                    time.sleep(0.5)
-                    continue
-        except Exception as e:
-            # Silently handle any unexpected errors to avoid disrupting the main app
-            pass
+        # Initialize last_size if file already exists
+        if self.log_path.exists():
+            self.last_size = self.log_path.stat().st_size
     
-    watcher_thread = threading.Thread(target=watch_file, daemon=True)
-    watcher_thread._stop_event = threading.Event()
-    watcher_thread.start()
-    return watcher_thread
+    def on_modified(self, event):
+        """Handle file modification events."""
+        if event.is_directory:
+            return
+            
+        # Check if this is our target log file
+        if Path(event.src_path) == self.log_path:
+            self._read_new_content()
+    
+    def _read_new_content(self):
+        """Read and print new content from the log file."""
+        try:
+            if not self.log_path.exists():
+                return
+                
+            current_size = self.log_path.stat().st_size
+            if current_size <= self.last_size:
+                return
+            
+            # Read only the new content
+            with open(self.log_path, 'r', encoding='utf-8', errors='replace') as f:
+                f.seek(self.last_size)
+                new_content = f.read(current_size - self.last_size)
+                
+                if new_content.strip():  # Only print if there's actual content
+                    print_colored(
+                        f'[MCP Server Log: "{self.server_name}"] {new_content.strip()}',
+                        Colors.GREEN
+                    )
+            
+            self.last_size = current_size
+            
+        except (OSError, IOError):
+            # File might be temporarily unavailable, ignore silently
+            pass
 
 
 async def get_user_query(remaining_queries: list[str]) -> str | None:
@@ -264,7 +265,7 @@ async def init_react_agent(
     config: ConfigType,
     logger: logging.Logger,
     log_dir: Path | None = None
-) -> tuple[Runnable, list[BaseMessage], McpServerCleanupFn, ExitStack, list[threading.Thread]]:
+) -> tuple[Runnable, list[BaseMessage], McpServerCleanupFn, ExitStack, Observer]:
     """Initialize and configure a ReAct agent for conversation handling.
 
     Args:
@@ -276,13 +277,13 @@ async def init_react_agent(
             If None, uses current directory.
 
     Returns:
-        tuple[Runnable, list[BaseMessage], McpServerCleanupFn, ExitStack, list[threading.Thread]]:
+        tuple[Runnable, list[BaseMessage], McpServerCleanupFn, ExitStack, Observer]:
             Returns a tuple containing:
             - Configured ReAct agent ready for conversation
             - Initial message list (empty or with system prompt)
             - Cleanup function for MCP server connections
             - Cleanup ExitStack for log files
-            - List of log watcher threads
+            - Watchdog Observer for log file monitoring
     """
     llm_config = config["llm"]
     logger.info(f"Initializing model... {json.dumps(llm_config, indent=2)}\n")
@@ -297,7 +298,9 @@ async def init_react_agent(
     
     # Set up log directory and files for MCP servers
     log_file_exit_stack = ExitStack()
-    log_watchers = []
+    
+    # Initialize watchdog observer for log file monitoring
+    observer = Observer()
     
     # Create log directory if specified
     if log_dir is not None:
@@ -321,9 +324,13 @@ async def init_react_agent(
         log_file_exit_stack.callback(log_file.close)
         logger.debug(f"Logging {server_name} to: {log_path}")
         
-        # Start log file watcher for real-time console output
-        watcher_thread = add_log_file_watcher(log_path, server_name)
-        log_watchers.append(watcher_thread)
+        # Set up watchdog monitoring for this log file
+        log_handler = LogFileHandler(log_path, server_name)
+        observer.schedule(log_handler, path=str(log_path.parent), recursive=False)
+    
+    # Start the observer
+    if len([s for s in mcp_servers.values() if "command" in s]) > 0:
+        observer.start()
 
     tools, mcp_cleanup = await convert_mcp_to_langchain_tools(
         mcp_servers,
@@ -340,7 +347,7 @@ async def init_react_agent(
     if system_prompt and isinstance(system_prompt, str):
         messages.append(SystemMessage(content=system_prompt))
 
-    return agent, messages, mcp_cleanup, log_file_exit_stack, log_watchers
+    return agent, messages, mcp_cleanup, log_file_exit_stack, observer
 
 
 async def run() -> None:
@@ -367,7 +374,7 @@ async def run() -> None:
             else []
         )
 
-        agent, messages, mcp_cleanup, log_file_exit_stack, log_watchers = (
+        agent, messages, mcp_cleanup, log_file_exit_stack, observer = (
             await init_react_agent(config, logger, args.log_dir)
         )
 
@@ -382,11 +389,10 @@ async def run() -> None:
         if "mcp_cleanup" in locals() and mcp_cleanup is not None:
             await mcp_cleanup()
 
-        # Stop log watcher threads
-        if "log_watchers" in locals():
-            for watcher in log_watchers:
-                if hasattr(watcher, '_stop_event'):
-                    watcher._stop_event.set()
+        # Stop watchdog observer
+        if "observer" in locals():
+            observer.stop()
+            observer.join()
 
         if "log_file_exit_stack" in locals():
             log_file_exit_stack.close()
