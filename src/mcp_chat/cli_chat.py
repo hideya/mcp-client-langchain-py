@@ -6,6 +6,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from contextlib import ExitStack
 from typing import (
     Any,
     cast,
@@ -204,7 +205,7 @@ async def handle_conversation(
 async def init_react_agent(
     config: ConfigType,
     logger: logging.Logger
-) -> tuple[Runnable, list[BaseMessage], McpServerCleanupFn]:
+) -> tuple[Runnable, list[BaseMessage], McpServerCleanupFn, ExitStack]:
     """Initialize and configure a ReAct agent for conversation handling.
 
     Args:
@@ -219,6 +220,7 @@ async def init_react_agent(
             - Configured ReAct agent ready for conversation
             - Initial message list (empty or with system prompt)
             - Cleanup function for MCP server connections
+            - Cleanup ExitStack for log files
     """
     llm_config = config["llm"]
     logger.info(f"Initializing model... {json.dumps(llm_config, indent=2)}\n")
@@ -230,6 +232,25 @@ async def init_react_agent(
 
     mcp_servers = config["mcp_servers"]
     logger.info(f"Initializing {len(mcp_servers)} MCP server(s)...\n")
+    
+    # Set a file-like object to which MCP server's stderr is redirected
+    # NOTE: Why the key name `errlog` for `server_config` was chosen:
+    # Unlike TypeScript SDK's `StdioServerParameters`, the Python
+    # SDK's `StdioServerParameters` doesn't include `stderr: int`.
+    # Instead, it calls `stdio_client()` with a separate argument
+    # `errlog: TextIO`.  I once included `stderr: int` for
+    # compatibility with the TypeScript version, but decided to
+    # follow the Python SDK more closely.
+    log_file_exit_stack = ExitStack()
+    for server_name in mcp_servers:
+        server_config = mcp_servers[server_name]
+        # Skip URL-based servers (no command)
+        if "command" not in server_config:
+            continue
+        log_path = f"mcp-server-{server_name}.log"
+        log_file = open(log_path, "w")
+        server_config["errlog"] = log_file
+        log_file_exit_stack.callback(log_file.close)
 
     tools, mcp_cleanup = await convert_mcp_to_langchain_tools(
         mcp_servers,
@@ -246,7 +267,7 @@ async def init_react_agent(
     if system_prompt and isinstance(system_prompt, str):
         messages.append(SystemMessage(content=system_prompt))
 
-    return agent, messages, mcp_cleanup
+    return agent, messages, mcp_cleanup, log_file_exit_stack
 
 
 async def run() -> None:
@@ -273,7 +294,9 @@ async def run() -> None:
             else []
         )
 
-        agent, messages, mcp_cleanup = await init_react_agent(config, logger)
+        agent, messages, mcp_cleanup, log_file_exit_stack = (
+            await init_react_agent(config, logger)
+        )
 
         await handle_conversation(
             agent,
@@ -283,8 +306,11 @@ async def run() -> None:
         )
 
     finally:
-        if mcp_cleanup is not None:
+        if "mcp_cleanup" in locals() and mcp_cleanup is not None:
             await mcp_cleanup()
+
+        if "log_file_exit_stack" in locals():
+            log_file_exit_stack.close()
 
 
 def main() -> None:
