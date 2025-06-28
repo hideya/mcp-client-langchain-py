@@ -11,13 +11,13 @@ install: .venv
 	uv pip install .
 
 start:
-	uv run src/mcp_try_cli/cli_chat.py
+	uv run src/mcp_chat/cli_chat.py
 
 start-v:
-	uv run src/mcp_try_cli/cli_chat.py -v
+	uv run src/mcp_chat/cli_chat.py -v
 
 start-h:
-	uv run src/mcp_try_cli/cli_chat.py -h
+	uv run src/mcp_chat/cli_chat.py -h
 
 clean:
 	rm -rf dist

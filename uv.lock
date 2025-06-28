@@ -769,8 +769,8 @@ wheels = [
 ]
 
 [[package]]
-name = "mcp-try-cli"
-version = "0.2.7"
+name = "mcp-chat"
+version = "0.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "langchain" },

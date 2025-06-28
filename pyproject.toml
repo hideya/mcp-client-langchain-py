@@ -1,6 +1,6 @@
 [project]
-name = "mcp-try-cli"
-version = "0.0.1"
+name = "mcp-chat"
+version = "0.0.3"
 description = "Simple CLI MCP Client to quickly test and explore MCP servers from the command line"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -36,7 +36,7 @@ dependencies = [
 "Source Code" = "https://github.com/hideya/mcp-client-langchain-py"
 
 [project.scripts]
-mcp-try-cli = "mcp_try_cli.cli_chat:main"
+mcp-chat = "mcp_chat.cli_chat:main"
 
 [build-system]
 requires = ["hatchling"]
