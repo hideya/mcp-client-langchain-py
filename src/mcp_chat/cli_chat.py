@@ -130,45 +130,87 @@ class LogFileHandler(FileSystemEventHandler):
         self.server_name = server_name
         self.last_size = 0
         
+        print(f"[DEBUG] LogFileHandler created for {server_name}: {log_path}")
+        
         # Initialize last_size if file already exists
         if self.log_path.exists():
             self.last_size = self.log_path.stat().st_size
+            print(f"[DEBUG] File exists, initial size: {self.last_size}")
+        else:
+            print(f"[DEBUG] File does not exist yet: {log_path}")
+    
+    def on_any_event(self, event):
+        """Debug: catch all events and check for our log file."""
+        print(f"[DEBUG] Event detected: {event.event_type} on {event.src_path}")
+        
+        # Check if this event is for our log file
+        if not event.is_directory:
+            event_path = Path(event.src_path)
+            if event_path == self.log_path:
+                print(f"[DEBUG] Our log file {self.server_name} was {event.event_type}")
+                if event.event_type in ['modified', 'created']:
+                    self._read_new_content()
+    
+    def on_created(self, event):
+        """Handle file creation events."""
+        print(f"[DEBUG] on_created called: {event.src_path}")
+        if not event.is_directory:
+            event_path = Path(event.src_path)
+            if event_path == self.log_path:
+                print(f"[DEBUG] Our log file {self.server_name} was created!")
+                self.last_size = 0  # Reset since it's a new file
+                self._read_new_content()
     
     def on_modified(self, event):
         """Handle file modification events."""
+        print(f"[DEBUG] on_modified called: {event.src_path}, is_directory: {event.is_directory}")
+        
         if event.is_directory:
             return
             
         # Check if this is our target log file
-        if Path(event.src_path) == self.log_path:
+        event_path = Path(event.src_path)
+        print(f"[DEBUG] Comparing {event_path} with {self.log_path}")
+        if event_path == self.log_path:
+            print(f"[DEBUG] Match! Reading new content for {self.server_name}")
             self._read_new_content()
+        else:
+            print(f"[DEBUG] No match for {self.server_name}")
     
     def _read_new_content(self):
         """Read and print new content from the log file."""
         try:
             if not self.log_path.exists():
+                print(f"[DEBUG] File {self.log_path} does not exist")
                 return
                 
             current_size = self.log_path.stat().st_size
+            print(f"[DEBUG] Current size: {current_size}, last size: {self.last_size}")
+            
             if current_size <= self.last_size:
+                print(f"[DEBUG] No new content (current: {current_size}, last: {self.last_size})")
                 return
             
             # Read only the new content
             with open(self.log_path, 'r', encoding='utf-8', errors='replace') as f:
                 f.seek(self.last_size)
                 new_content = f.read(current_size - self.last_size)
+                print(f"[DEBUG] Read {len(new_content)} characters: {repr(new_content[:100])}")
                 
                 if new_content.strip():  # Only print if there's actual content
                     print_colored(
                         f'[MCP Server Log: "{self.server_name}"] {new_content.strip()}',
                         Colors.GREEN
                     )
+                else:
+                    print(f"[DEBUG] New content is only whitespace")
             
             self.last_size = current_size
+            print(f"[DEBUG] Updated last_size to {self.last_size}")
             
-        except (OSError, IOError):
+        except (OSError, IOError) as e:
             # File might be temporarily unavailable, ignore silently
-            pass
+            print(f"[DEBUG] Error reading file: {e}")
 
 
 async def get_user_query(remaining_queries: list[str]) -> str | None:
@@ -326,11 +368,18 @@ async def init_react_agent(
         
         # Set up watchdog monitoring for this log file
         log_handler = LogFileHandler(log_path, server_name)
-        observer.schedule(log_handler, path=str(log_path.parent), recursive=False)
+        watch_dir = str(log_path.parent)
+        print(f"[DEBUG] Scheduling observer for {server_name}: watching {watch_dir}")
+        observer.schedule(log_handler, path=watch_dir, recursive=False)
     
     # Start the observer
-    if len([s for s in mcp_servers.values() if "command" in s]) > 0:
+    mcp_servers_with_commands = [s for s in mcp_servers.values() if "command" in s]
+    if len(mcp_servers_with_commands) > 0:
+        print(f"[DEBUG] Starting observer for {len(mcp_servers_with_commands)} MCP server(s)")
         observer.start()
+        print(f"[DEBUG] Observer started successfully")
+    else:
+        print(f"[DEBUG] No MCP servers with commands found, not starting observer")
 
     tools, mcp_cleanup = await convert_mcp_to_langchain_tools(
         mcp_servers,
