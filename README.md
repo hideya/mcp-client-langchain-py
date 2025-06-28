@@ -1,17 +1,67 @@
 # Simple CLI MCP Client Using LangChain / Python [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/hideya/langchain-mcp-tools-py/blob/main/LICENSE)
 
-This simple [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
-client with command line interface demonstrates the use of MCP server tools by the LangChain ReAct Agent.
+This is a simple [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) client
+that is intended for trying out MCP servers via a command-line interface.
 
-It leverages a utility function `convert_mcp_to_langchain_tools()` from
+When testing LLM and MCP servers, their settings can be conveniently configured via a configuration file, such as the following:
+
+```json5
+{
+    "llm": {
+        "model_provider": "openai",
+        "model": "gpt-4o-mini",
+        // "model_provider": "anthropic",
+        // "model": "claude-3-5-haiku-latest",
+        // "model_provider": "google_genai",
+        // "model": "gemini-2.0-flash",
+    },
+
+    "mcp_servers": {
+        "fetch": {
+            "command": "uvx",
+            "args": [ "mcp-server-fetch" ]
+        },
+
+        "weather": {
+            "command": "npx",
+            "args": [ "-y", "@h1deya/mcp-server-weather" ]
+        },
+
+        // Auto-detection: tries Streamable HTTP first, falls back to SSE
+        "remote-mcp-server": {
+            "url": "https://${SERVER_HOST}:${SERVER_PORT}/..."
+        },
+
+        // Example of authentication via Authorization header
+        "github": {
+            "type": "http",  // recommended to specify the protocol explicitly when authentication is used
+            "url": "https://api.githubcopilot.com/mcp/",
+            "headers": {
+                "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+            }
+        },
+    }
+}
+```
+
+It leverages  [LangChain ReAct Agent](https://langchain-ai.github.io/langgraph/reference/agents/) and
+a utility function `convert_mcp_to_langchain_tools()` from
 [`langchain_mcp_tools`](https://pypi.org/project/langchain-mcp-tools/).  
 This function handles parallel initialization of specified multiple MCP servers
 and converts their available tools into a list of LangChain-compatible tools
 ([list[BaseTool]](https://python.langchain.com/api_reference/core/tools/langchain_core.tools.base.BaseTool.html#langchain_core.tools.base.BaseTool)).
 
-LLMs from Anthropic, OpenAI and Groq are currently supported.
+This client supports both local (stdio) MCP servers as well as
+remote (Streamable HTTP / SSE / WebSocket) MCP servers
+which are accessible via a simple URL and optional headers for authentication and other purposes.
 
-A typescript version of this MCP client is available
+This client only supports text results of MCP tool calls and disregards other result types.
+
+For the convenience of debugging MCP servers, this client prints local (stdio) MCP server logs to the console.
+
+LLMs from Anthropic, OpenAI and Google (GenAI) are currently supported.
+
+A TypeScript version of this MCP client is available
 [here](https://github.com/hideya/mcp-client-langchain-ts)
 
 ## Prerequisites

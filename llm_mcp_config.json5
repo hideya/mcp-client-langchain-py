@@ -6,30 +6,46 @@
 // and refer to them with `${...}` notation as needed.
 {
     // "llm": {
+    //     // https://docs.anthropic.com/en/docs/about-claude/pricing
+    //     // https://console.anthropic.com/settings/billing
     //     "model_provider": "anthropic",
-    //     "model": "claude-3-7-sonnet-latest",
+    //     "model": "claude-3-5-haiku-latest",
+    //     // "model": "claude-sonnet-4-0",
     //     // "temperature": 0.0,
     //     // "max_tokens": 10000,
     //     "system_prompt": "Answer briefly and clearly",
     // },
+
     "llm": {
+        // https://platform.openai.com/docs/pricing
+        // https://platform.openai.com/settings/organization/billing/overview
         "model_provider": "openai",
-        "model": "o3-mini",
-        // "temperature": 0.0,  //  'temperature' is not supported with this model
+        "model": "gpt-4o-mini",
+        // "model": "o4-mini",
+        // "temperature": 0.0,  //  'temperature' is not supported with "o4-mini"
         // "max_completion_tokens": 10000,  //  Use 'max_completion_tokens' instead of 'max_tokens'
         "system_prompt": "Answer briefly and clearly",
     },
+
     // "llm": {
-    //     "model_provider": "groq",
-    //     "model": "llama-3.3-70b-versatile",
+    //     // https://ai.google.dev/gemini-api/docs/pricing
+    //     // https://console.cloud.google.com/billing
+    //     "model_provider": "google_genai",
+    //     "model": "gemini-2.0-flash",
+    //     // "model": "gemini-1.5-pro",
     //     // "temperature": 0.0,
     //     // "max_tokens": 10000,
+    //     "system_prompt": "Answer briefly and clearly",
     // },
+
     "example_queries": [
-        "Tomorrow's weather in SF?",
-        "Read and briefly summarize the LICENSE file",
+        "Are there any weather alerts in California?",
         "Read the news headlines on bbc.com",
+        "Read and briefly summarize the LICENSE file",
+        // "Open the webpage at bbc.com",
+        // "Search the web and get today's news related to tokyo",
     ],
+
     "mcp_servers": {
         // https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem
         "filesystem": {
@@ -40,6 +56,7 @@
                 "."
             ]
         },
+
         // https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
         "fetch": {
             "command": "uvx",
@@ -47,6 +64,7 @@
                 "mcp-server-fetch"
             ]
         },
+
         // https://github.com/modelcontextprotocol/quickstart-resources/tree/main/weather-server-python
         "weather": {
             "command": "npx",
@@ -55,24 +73,47 @@
                 "@h1deya/mcp-server-weather"
             ]
         },
-        // https://github.com/microsoft/playwright-mcp
-        "playwright": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@playwright/mcp@latest"
-            ]
-        },
+
+        // // Auto-detection: tries Streamable HTTP first, falls back to SSE
+        // "auto-detect-server": {
+        //     "url": "http://${SERVER_HOST}:${SERVER_PORT}/..."
+        // },
+
+        // // WebSocket
+        // "ws-server-name": {
+        //     "url": "ws://${WS_SERVER_HOST}:${WS_SERVER_PORT}/..."
+        // },
+
+        // // Test SSE connection with the auto fallback
+        // // See the comments at the top of index.ts
+        // weather: {
+        //     "url": "http://localhost:${SSE_SERVER_PORT}/sse"
+        // },
+
+        // // Example of authentication via Authorization header
+        // // https://github.com/github/github-mcp-server?tab=readme-ov-file#remote-github-mcp-server
+        // "github": {
+        //   // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
+        //   "type": "http",  // or `transport: "http",`
+        //   "url": "https://api.githubcopilot.com/mcp/",
+        //   "headers": {
+        //     "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+        //   }
+        // },
+        // // NOTE: When accessing the GitHub MCP server, [GitHub PAT (Personal Access Token)](https://github.com/settings/personal-access-tokens)
+        // // alone is not enough; your GitHub account must have an active Copilot subscription or be assigned a Copilot license through your organization.
+
+        // // https://github.com/microsoft/playwright-mcp
+        // "playwright": {
+        //     "command": "npx",
+        //     "args": [ "-y", "@playwright/mcp@latest" ]
+        // },
+
         // // https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search
         // "brave-search": {
         //     "command": "npx",
-        //     "args": [
-        //         "-y",
-        //         "@modelcontextprotocol/server-brave-search"
-        //     ],
-        //     "env": {
-        //         "BRAVE_API_KEY": "${BRAVE_API_KEY}"
-        //     }
+        //     "args": [ "-y", "@modelcontextprotocol/server-brave-search"],
+        //     "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
         // },
     }
 }
