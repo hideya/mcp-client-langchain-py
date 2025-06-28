@@ -6,6 +6,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from contextlib import ExitStack
 from typing import (
     Any,
     cast,
@@ -34,7 +35,10 @@ except ImportError as e:
     sys.exit(1)
 
 # Local application imports
-from config_loader import load_config
+try:
+    from .config_loader import load_config  # Package import
+except ImportError:
+    from config_loader import load_config  # Direct script import
 
 # Type definitions
 ConfigType = dict[str, Any]
@@ -52,9 +56,22 @@ class Colors(str, Enum):
 
 def parse_arguments() -> argparse.Namespace:
     """Parse and return command line args for config path and verbosity."""
+    # Try to get version, with fallback for development
+    try:
+        from . import __version__
+        version = __version__
+    except ImportError:
+        # Fallback for development (running script directly)
+        version = "dev"
+    
     parser = argparse.ArgumentParser(
         description="CLI Chat Application",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {version}"
     )
     parser.add_argument(
         "-c", "--config",
@@ -67,6 +84,12 @@ def parse_arguments() -> argparse.Namespace:
         "-v", "--verbose",
         action="store_true",
         help="run with verbose logging"
+    )
+    parser.add_argument(
+        "--log-dir",
+        type=Path,
+        help="directory to store MCP server logs (default: current directory)",
+        metavar="PATH"
     )
     return parser.parse_args()
 
@@ -187,8 +210,9 @@ async def handle_conversation(
 
 async def init_react_agent(
     config: ConfigType,
-    logger: logging.Logger
-) -> tuple[Runnable, list[BaseMessage], McpServerCleanupFn]:
+    logger: logging.Logger,
+    log_dir: Path | None = None
+) -> tuple[Runnable, list[BaseMessage], McpServerCleanupFn, ExitStack]:
     """Initialize and configure a ReAct agent for conversation handling.
 
     Args:
@@ -196,13 +220,16 @@ async def init_react_agent(
             MCP server settings
         logger (logging.Logger): Logger instance for initialization
             status updates
+        log_dir (Path | None): Directory to store MCP server logs.
+            If None, uses current directory.
 
     Returns:
-        tuple[Runnable, list[BaseMessage], McpServerCleanupFn]:
+        tuple[Runnable, list[BaseMessage], McpServerCleanupFn, ExitStack]:
             Returns a tuple containing:
             - Configured ReAct agent ready for conversation
             - Initial message list (empty or with system prompt)
             - Cleanup function for MCP server connections
+            - Cleanup ExitStack for log files
     """
     llm_config = config["llm"]
     logger.info(f"Initializing model... {json.dumps(llm_config, indent=2)}\n")
@@ -214,6 +241,31 @@ async def init_react_agent(
 
     mcp_servers = config["mcp_servers"]
     logger.info(f"Initializing {len(mcp_servers)} MCP server(s)...\n")
+    
+    # Set up log directory and files for MCP servers
+    log_file_exit_stack = ExitStack()
+    
+    # Create log directory if specified
+    if log_dir is not None:
+        log_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"MCP server logs will be stored in: {log_dir.absolute()}")
+    
+    for server_name in mcp_servers:
+        server_config = mcp_servers[server_name]
+        # Skip URL-based servers (no command)
+        if "command" not in server_config:
+            continue
+        
+        # Determine log file path
+        if log_dir is not None:
+            log_path = log_dir / f"mcp-server-{server_name}.log"
+        else:
+            log_path = Path(f"mcp-server-{server_name}.log")
+        
+        log_file = open(log_path, "w")
+        server_config["errlog"] = log_file
+        log_file_exit_stack.callback(log_file.close)
+        logger.debug(f"Logging {server_name} to: {log_path}")
 
     tools, mcp_cleanup = await convert_mcp_to_langchain_tools(
         mcp_servers,
@@ -230,14 +282,24 @@ async def init_react_agent(
     if system_prompt and isinstance(system_prompt, str):
         messages.append(SystemMessage(content=system_prompt))
 
-    return agent, messages, mcp_cleanup
+    return agent, messages, mcp_cleanup, log_file_exit_stack
 
 
 async def run() -> None:
     """Main async function to set up and run the simple chat app."""
     mcp_cleanup: McpServerCleanupFn | None = None
     try:
-        load_dotenv()
+        # Load environment variables from .env file
+        # Workaround: For some reason, load_dotenv() without arguments
+        # sometimes fails to find the .env file in the current directory
+        # when installed via PyPI.
+        # Explicitly specifying the path works reliably.
+        env_file = Path(".env")
+        if env_file.exists():
+            load_dotenv(env_file)
+        else:
+            load_dotenv()  # Fallback to default behavior
+        
         args = parse_arguments()
         logger = init_logger(args.verbose)
         config = load_config(args.config)
@@ -247,7 +309,9 @@ async def run() -> None:
             else []
         )
 
-        agent, messages, mcp_cleanup = await init_react_agent(config, logger)
+        agent, messages, mcp_cleanup, log_file_exit_stack = (
+            await init_react_agent(config, logger, args.log_dir)
+        )
 
         await handle_conversation(
             agent,
@@ -257,8 +321,11 @@ async def run() -> None:
         )
 
     finally:
-        if mcp_cleanup is not None:
+        if "mcp_cleanup" in locals() and mcp_cleanup is not None:
             await mcp_cleanup()
+
+        if "log_file_exit_stack" in locals():
+            log_file_exit_stack.close()
 
 
 def main() -> None:
