@@ -55,9 +55,22 @@ class Colors(str, Enum):
 
 def parse_arguments() -> argparse.Namespace:
     """Parse and return command line args for config path and verbosity."""
+    # Try to get version, with fallback for development
+    try:
+        from . import __version__
+        version = __version__
+    except ImportError:
+        # Fallback for development (running script directly)
+        version = "dev"
+    
     parser = argparse.ArgumentParser(
         description="CLI Chat Application",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {version}"
     )
     parser.add_argument(
         "-c", "--config",
