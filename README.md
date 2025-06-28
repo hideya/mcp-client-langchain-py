@@ -89,7 +89,7 @@ See [README_DEV.md](https://github.com/hideya/mcp-client-langchain-py/blob/main/
 - **Flexible configuration**: JSON5 config with environment variable support
 - **Multiple LLM providers**: OpenAI, Anthropic, Google (GenAI)
 - **Command & URL servers**: Support for both local and remote MCP servers
-- **Real-time logging**: Live stdio MCP server logs with customizable log directory
+- **Local MCP Server logging**: Save stdio MCP server logs with customizable log directory
 - **Interactive testing**: Example queries for the convenience of repeated testing
 
 ## Limitations
