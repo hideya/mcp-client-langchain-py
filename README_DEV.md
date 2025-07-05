@@ -13,7 +13,7 @@ When testing LLM and MCP servers, their settings can be conveniently configured 
         // "model_provider": "anthropic",
         // "model": "claude-3-5-haiku-latest",
         // "model_provider": "google_genai",
-        // "model": "gemini-2.0-flash",
+        // "model": "gemini-2.5-flash",
     },
 
     "mcp_servers": {
@@ -71,9 +71,11 @@ A TypeScript version of this MCP client is available
   installed to run Python package-based MCP servers
 - [optional] [npm 7+ (`npx`)](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
   to run Node.js package-based MCP servers
-- API keys from [Anthropic](https://console.anthropic.com/settings/keys),
-  [OpenAI](https://platform.openai.com/api-keys), and/or
-  [Groq](https://console.groq.com/keys)
+- LLM API keys from
+  [OpenAI](https://platform.openai.com/api-keys),
+  [Anthropic](https://console.anthropic.com/settings/keys),
+  and/or
+  [Google AI Studio (for GenAI/Gemini)](https://aistudio.google.com/apikey)
   as needed
 
 ## Setup

@@ -31,6 +31,16 @@ class ConfigValidationError(ConfigError):
 def load_config(config_path: str):
     """Load and validate configuration from JSON5 file with environment
     variable substitution.
+    
+    Args:
+        config_path: Path to the JSON5 configuration file
+        
+    Returns:
+        dict: Parsed configuration with environment variables substituted
+        
+    Raises:
+        ConfigFileNotFoundError: If the config file doesn't exist
+        ConfigValidationError: If environment variables are missing or parsing fails
     """
     config_file = Path(config_path)
     if not config_file.exists():
@@ -38,15 +48,32 @@ def load_config(config_path: str):
 
     with open(config_file, "r", encoding="utf-8") as f:
         content = f.read()
-    
+
+    # Replace ${VAR_NAME} with environment variable values w/o checking
+    # for key, value in os.environ.items():
+    #     content = content.replace(f"${{{key}}}", value or '')
+
     # Replace ${VAR_NAME} with environment variable values, but skip comments
+    # to avoid raising ConfigValidationError for undefined variables in comments
+    # (e.g., "// ${THIS_ENV_VAR_NOT_DEFINED_SO_COMMENTED_OUT_TO_AVOID_RAISING_EXCEPTION}")
     def replace_env_var(match):
+        """Replace environment variable placeholder with actual value.
+        
+        Args:
+            match: Regex match object containing variable name
+            
+        Returns:
+            str: Environment variable value
+            
+        Raises:
+            ConfigValidationError: If environment variable is not found
+        """
         var_name = match.group(1)
         env_value = os.getenv(var_name)
         if env_value is None:
             raise ConfigValidationError(
-                f'Environment variable "{var_name}" not found '
-                f'in "{config_file}"'
+                f'Environment variable "{var_name}" used '
+                f'in "{config_file}" not found'
             )
         return env_value
     
@@ -55,10 +82,10 @@ def load_config(config_path: str):
     processed_lines = []
     
     for line in lines:
-        # Split line at first occurrence of "//"
+        # Split line at first occurrence of "//" to separate code from comments
         if "//" in line:
             code_part, comment_part = line.split("//", 1)
-            # Apply substitution only to the code part
+            # Apply environment variable substitution only to the code part
             processed_code = re.sub(r"\$\{([^}]+)\}", replace_env_var,
                                     code_part)
             # Reconstruct line with original comment
@@ -71,7 +98,7 @@ def load_config(config_path: str):
     
     content = "\n".join(processed_lines)
     
-    # Parse the substituted content
+    # Parse the processed content as JSON5
     config: dict[str, Any] = json5.loads(content)
     
     return config

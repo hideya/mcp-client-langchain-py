@@ -1,4 +1,4 @@
-# Simple CLI MCP Client Using LangChain / Python [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/hideya/langchain-mcp-tools-py/blob/main/LICENSE) [![pypi version](https://img.shields.io/pypi/v/mcp-chat.svg)](https://pypi.org/project/mcp-chat/)
+# Simple MCP Client to Explore MCP Servers / Python [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/hideya/langchain-mcp-tools-py/blob/main/LICENSE) [![pypi version](https://img.shields.io/pypi/v/mcp-chat.svg)](https://pypi.org/project/mcp-chat/)
 
 
 **Quickly test and explore MCP servers from the command line!**
@@ -51,7 +51,7 @@ A TypeScript equivalent of this utility is available [here](https://www.npmjs.co
     },
 
     "mcp_servers": {
-      "weather": {
+      "us-weather": {  // US weather only
         "command": "npx", 
         "args": ["-y", "@h1deya/mcp-server-weather"]
       },
@@ -157,7 +157,7 @@ Create a `llm_mcp_config.json5` file:
 {
   "llm": {
     "model_provider": "openai",
-    "model": "gpt-4o-mini",
+    "model": "gpt-4.1-nano",
     // model: "o4-mini",
   },
   
@@ -169,8 +169,8 @@ Create a `llm_mcp_config.json5` file:
 
   // "llm": {
   //   "model_provider": "google_genai",
-  //   "model": "gemini-2.0-flash",
-  //   // "model": "gemini-2.5-pro-preview-06-05",
+  //   "model": "gemini-2.5-flash",
+  //   // "model": "gemini-2.5-pro",
   // }
 
   "example_queries": [
@@ -238,17 +238,10 @@ There are quite a few useful MCP servers already available:
 
 ## Troubleshooting
 
-### Common Issues
-
-1. **Missing API key**: Make sure your `.env` file contains the required API key
-2. **Server not found**: Ensure MCP server packages are available via npx
-3. **Permission errors**: Check file permissions for log directory
-
-### Getting Help
-
-- Check the logs in your specified log directory
-- Use `--verbose` flag for detailed output
-- Refer to [MCP documentation](https://modelcontextprotocol.io/)
+- Make sure your configuration and .env files are correct, especially the spelling of the API keys
+- Check the local MCP server logs
+- Use `--verbose` flag to view the detailed logs
+- Refer to [Debugging Section in MCP documentation](https://modelcontextprotocol.io/docs/tools/debugging)
 
 ## License
 

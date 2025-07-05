@@ -1,31 +1,30 @@
 [project]
 name = "mcp-chat"
-version = "0.2.7"
-description = "Simple CLI MCP Client to quickly test and explore MCP servers from the command line"
+version = "0.2.10"
+description = "Simple MCP Client to quickly test and explore MCP servers from the command line"
 readme = "README.md"
 requires-python = ">=3.11"
 keywords = [
     "mcp",
-    "cli",
-    "try",
-    "test",
     "model-context-protocol",
+    "client",
+    "cli",
     "langchain",
     "tools",
     "python",
-    "client",
     "simple",
     "quick",
     "explore",
+    "try",
+    "test"
 ]
 dependencies = [
-    "langchain-mcp-tools>=0.2.7",
+    "langchain-mcp-tools>=0.2.10",
     "langchain>=0.3.26",
     "langgraph>=0.5.0",
     "langchain-google-genai>=2.1.5",
     "langchain-anthropic>=0.3.1",
     "langchain-openai>=0.3.0",
-    "langchain-groq>=0.2.3",
     "pyjson5>=1.6.8",
     "python-dotenv>=1.0.1",
     "websockets>=15.0.1",

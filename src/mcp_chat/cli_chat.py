@@ -28,6 +28,7 @@ try:
     from langchain_mcp_tools import (
         convert_mcp_to_langchain_tools,
         McpServerCleanupFn,
+        McpInitializationError,
     )
 except ImportError as e:
     print(f"\nError: Required package not found: {e}")
@@ -36,9 +37,11 @@ except ImportError as e:
 
 # Local application imports
 try:
-    from .config_loader import load_config  # Package import
+    # Package import
+    from .config_loader import load_config, ConfigFileNotFoundError, ConfigValidationError
 except ImportError:
-    from config_loader import load_config  # Direct script import
+    # Direct script import
+    from config_loader import load_config, ConfigFileNotFoundError, ConfigValidationError
 
 # Type definitions
 ConfigType = dict[str, Any]
@@ -94,13 +97,33 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
+class ColorFormatter(logging.Formatter):
+    COLORS = {
+        'DEBUG': '\x1b[90m',   # Gray
+        'INFO': '\x1b[90m',    # Gray
+        'WARNING': '\x1b[93m', # Yellow
+        'ERROR': '\x1b[91m',   # Red
+        'CRITICAL': '\x1b[1;101m' # Red background, Bold text
+    }
+    RESET = '\x1b[0m'
+
+    def format(self, record):
+        levelname_color = self.COLORS.get(record.levelname, '')
+        record.levelname = f"{levelname_color}[{record.levelname}]{self.RESET}"
+        return super().format(record)
+
+
 def init_logger(verbose: bool) -> logging.Logger:
     """Initialize and return a logger with appropriate verbosity level."""
-    logging.basicConfig(
-        level=logging.DEBUG if verbose else logging.INFO,
-        format="\x1b[90m[%(levelname)s]\x1b[0m %(message)s"
-    )
-    return logging.getLogger()
+    handler = logging.StreamHandler()
+    handler.setFormatter(ColorFormatter("%(levelname)s %(message)s"))
+    
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    logger.handlers = []  # Clear existing handlers
+    logger.addHandler(handler)
+    
+    return logger
 
 
 def print_colored(text: str, color: Colors, end: str = "\n") -> None:
@@ -233,6 +256,10 @@ async def init_react_agent(
     """
     llm_config = config["llm"]
     logger.info(f"Initializing model... {json.dumps(llm_config, indent=2)}\n")
+    
+    if llm_config["model"] is None:
+        print('"llm/model" needs to be specified')
+        exit(1)
 
     filtered_config = {
         k: v for k, v in llm_config.items() if k not in ["system_prompt"]
@@ -319,6 +346,28 @@ async def run() -> None:
             example_queries,
             args.verbose
         )
+    
+    except ConfigFileNotFoundError as e:
+        print("Failed to load configuration")
+        print(f'Make sure the config file "{args.config}" is available')
+        print("Use the --config option to specify which JSON5 configuration file to read")
+        
+    except ConfigValidationError as e:
+        print("Something wrong in the configuration")
+        print(e)
+    
+    except KeyError as e:
+        print(f'Something wrong in the config file "{args.config}"')
+        print(f"Key {e} cannot be found")
+        
+    except McpInitializationError as e:
+        logger.error(f"Failed to initialize: {e}")
+        
+    except ImportError as e:
+        logger.error("Failed to initialize LLM: Possibly unknown provider or model specified")
+    
+    except FileNotFoundError as e:
+        logger.error("Failed to start local MCP server")
 
     finally:
         if "mcp_cleanup" in locals() and mcp_cleanup is not None:
