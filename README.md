@@ -1,4 +1,4 @@
-# Simple MCP Client to Explore MCP Servers / Python [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/hideya/langchain-mcp-tools-py/blob/main/LICENSE) [![pypi version](https://img.shields.io/pypi/v/mcp-chat.svg)](https://pypi.org/project/mcp-chat/)
+# Simple MCP Client to Explore MCP Servers [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/hideya/langchain-mcp-tools-py/blob/main/LICENSE) [![pypi version](https://img.shields.io/pypi/v/mcp-chat.svg)](https://pypi.org/project/mcp-chat/)
 
 
 **Quickly test and explore MCP servers from the command line!**
@@ -18,11 +18,12 @@ A TypeScript equivalent of this utility is available [here](https://www.npmjs.co
   installed to run Python package-based MCP servers
 - [optional] [npm 7+ (`npx`)](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
   to run Node.js package-based MCP servers
-- LLM API keys from
+- LLM API key(s) from
   [OpenAI](https://platform.openai.com/api-keys),
   [Anthropic](https://console.anthropic.com/settings/keys),
+  [Google AI Studio (for GenAI/Gemini)](https://aistudio.google.com/apikey),
   and/or
-  [Google GenAI](https://aistudio.google.com/apikey)
+  [xAI](https://console.x.ai/),
   as needed
 
 ## Quick Start
@@ -47,7 +48,9 @@ A TypeScript equivalent of this utility is available [here](https://www.npmjs.co
       // "model_provider": "anthropic",
       // "model": "claude-3-5-haiku-latest",
       // "model_provider": "google_genai",
-      // "model": "gemini-2.0-flash",
+      // "model": "gemini-2.5-flash",
+      // "model_provider": "xai",
+      // "model": "grok-3-mini",
     },
 
     "mcp_servers": {
@@ -68,7 +71,8 @@ A TypeScript equivalent of this utility is available [here](https://www.npmjs.co
   ```bash
   echo "ANTHROPIC_API_KEY=sk-ant-...                                       
   OPENAI_API_KEY=sk-proj-...
-  GOOGLE_API_KEY=AI..." > .env
+  GOOGLE_API_KEY=AI...
+  XAI_API_KEY=xai-..." > .env
   
   code .env
   ```
@@ -157,7 +161,7 @@ Create a `llm_mcp_config.json5` file:
 {
   "llm": {
     "model_provider": "openai",
-    "model": "gpt-4.1-nano",
+    "model": "gpt-4o-mini",
     // model: "o4-mini",
   },
   
@@ -171,7 +175,13 @@ Create a `llm_mcp_config.json5` file:
   //   "model_provider": "google_genai",
   //   "model": "gemini-2.5-flash",
   //   // "model": "gemini-2.5-pro",
-  // }
+  // },
+
+  // "llm": {
+  //   "model_provider": "xai",
+  //   "model": "grok-3-mini",
+  //   // "model": "grok-4",
+  // },
 
   "example_queries": [
     "Tell me how LLMs work in a few sentences",

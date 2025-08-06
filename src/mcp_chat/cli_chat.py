@@ -31,8 +31,17 @@ try:
         McpInitializationError,
     )
 except ImportError as e:
-    print(f"\nError: Required package not found: {e}")
-    print("Please ensure all required packages are installed\n")
+    if "method resolution order" in str(e):
+        print(f"""
+Error: Dependency conflict detected.
+Please run: pip install --force-reinstall mcp-chat
+Or: pip-autoremove mcp-chat -y && pip install mcp-chat
+""")
+    else:
+        print(f"""
+Error: Required package not found: {e}
+Please ensure all required packages are installed
+""")
     sys.exit(1)
 
 # Local application imports
