@@ -273,7 +273,15 @@ async def init_react_agent(
     filtered_config = {
         k: v for k, v in llm_config.items() if k not in ["system_prompt"]
     }
-    llm = init_chat_model(**filtered_config)
+    # FIXME: init_chat_model() doesn't support "cerebras"
+    if filtered_config["model_provider"] == "cerebras":
+        from langchain_cerebras import ChatCerebras
+        filtered_config = {
+            k: v for k, v in filtered_config.items() if k not in ["model_provider"]
+        }
+        llm = ChatCerebras(**filtered_config)
+    else:
+        llm = init_chat_model(**filtered_config)
 
     mcp_servers = config["mcp_servers"]
     logger.info(f"Initializing {len(mcp_servers)} MCP server(s)...\n")
@@ -357,12 +365,12 @@ async def run() -> None:
         )
     
     except ConfigFileNotFoundError as e:
-        print("Failed to load configuration")
+        print("Failed to load the config file")
         print(f'Make sure the config file "{args.config}" is available')
         print("Use the --config option to specify which JSON5 configuration file to read")
         
     except ConfigValidationError as e:
-        print("Something wrong in the configuration")
+        print("Something wrong in the config file")
         print(e)
     
     except KeyError as e:

@@ -8,12 +8,9 @@ When testing LLM and MCP servers, their settings can be conveniently configured 
 ```json5
 {
     "llm": {
-        "model_provider": "openai",
-        "model": "gpt-4o-mini",
-        // "model_provider": "anthropic",
-        // "model": "claude-3-5-haiku-latest",
-        // "model_provider": "google_genai",
-        // "model": "gemini-2.5-flash",
+        "provider": "openai", "model": "gpt-4o-mini",
+        // "provider": "anthropic", "model": "claude-3-5-haiku-latest",
+        // "provider": "google_genai", "model": "gemini-2.5-flash",
     },
 
     "mcp_servers": {

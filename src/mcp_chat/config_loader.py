@@ -1,17 +1,8 @@
 import os
 import re
 from pathlib import Path
-from typing import TypedDict, Any
+from typing import TypedDict, NotRequired, Any
 import pyjson5 as json5
-
-
-class LLMConfig(TypedDict):
-    """Type definition for LLM configuration."""
-    model_provider: str
-    model: str | None
-    temperature: float | None
-    system_prompt: str | None
-
 
 class ConfigError(Exception):
     """Base exception for configuration related errors."""
@@ -26,6 +17,38 @@ class ConfigFileNotFoundError(ConfigError):
 class ConfigValidationError(ConfigError):
     """Raised when the configuration fails validation."""
     pass
+
+class LLMConfig(TypedDict):
+    """Type definition for LLM configuration."""
+    model_provider: NotRequired[str]
+    provider: NotRequired[str]
+    model: NotRequired[str]
+    temperature: NotRequired[float]
+    system_prompt: NotRequired[str]
+
+
+def normalize_config(cfg: dict) -> LLMConfig:
+    """
+    Normalize alias keys so internal code can rely on 'model_provider'.
+    """
+    print(cfg)
+    mp = cfg.get("model_provider")
+    pv = cfg.get("provider")
+    print(mp, pv)
+
+    if mp is None and pv is None:
+        raise ConfigValidationError(
+            f'Either "model_provider" or "provider" needs to be specified'
+        )
+    elif mp is not None and pv is not None:
+        raise ConfigValidationError(
+            f'Both "model_provider" and "provider" are specified'
+        )
+    elif mp is None and pv is not None:
+        cfg["model_provider"] = pv
+        del cfg["provider"]
+
+    return cfg
 
 
 def load_config(config_path: str):
@@ -100,5 +123,7 @@ def load_config(config_path: str):
     
     # Parse the processed content as JSON5
     config: dict[str, Any] = json5.loads(content)
+    
+    config["llm"] = normalize_config(config["llm"])
     
     return config
