@@ -51,8 +51,8 @@
     // "llm": {
     //     // ttps://console.groq.com/keys
     //     "provider": "groq",
-    //     "model": "openai/gpt-oss-20b",
-    //     // "model": "openai/gpt-oss-120b",
+    //     // "model": "openai/gpt-oss-20b",
+    //     "model": "openai/gpt-oss-120b",
     // },
 
     "example_queries": [
@@ -140,7 +140,7 @@
         //   "env": {
         //     // Although the following implies that this MCP server is designed for
         //     // OpenAI LLMs, it works fine with others models.
-        //     // Tested Claude and Gemini
+        //     // Tested with Claude and Gemini.
         //     "OPENAPI_MCP_HEADERS": '{"Authorization": "Bearer ${NOTION_INTEGRATION_SECRET}", "Notion-Version": "2022-06-28"}'
         //   },
         // },

@@ -274,13 +274,15 @@ async def init_react_agent(
         k: v for k, v in llm_config.items() if k not in ["system_prompt"]
     }
     # FIXME: init_chat_model() doesn't support "cerebras"
-    if filtered_config["model_provider"] == "cerebras":
+    if filtered_config["provider"] == "cerebras":
         from langchain_cerebras import ChatCerebras
         filtered_config = {
-            k: v for k, v in filtered_config.items() if k not in ["model_provider"]
+            k: v for k, v in filtered_config.items() if k not in ["provider"]
         }
         llm = ChatCerebras(**filtered_config)
     else:
+        filtered_config["model_provider"] = filtered_config["provider"]
+        del filtered_config["provider"]
         llm = init_chat_model(**filtered_config)
 
     mcp_servers = config["mcp_servers"]

@@ -50,7 +50,7 @@ A TypeScript equivalent of this utility is available [here](https://www.npmjs.co
       // "provider": "google_genai", "model": "gemini-2.5-flash",
       // "provider": "xai",          "model": "grok-3-mini",
       // "provider": "cerebras",     "model": "gpt-oss-120b",
-      // "provider": "grok",         "model": "openai/gpt-oss-20b",
+      // "provider": "groq",         "model": "openai/gpt-oss-20b",
     },
 
     "mcp_servers": {
@@ -138,9 +138,9 @@ mcp-chat --help
 
 ## Supported Model/API Providers
 
-- **OpenAI**: `gpt-4o`, `gpt-4o-mini`, etc.
+- **OpenAI**: `gpt-5-mini`, `gpt-4.1-nano`, etc.
 - **Anthropic**: `claude-sonnet-4-0`, `claude-3-5-haiku-latest`, etc.
-- **Google (GenAI)**: `gemini-2.0-flash`, `gemini-1.5-pro`, etc.
+- **Google (GenAI)**: `gemini-2.5-flash`, `gemini-2.5-pro`, etc.
 - **xAI**: `grok-3-mini`, `grok-4`, etc.
 - **Cerebras**: `gpt-oss-120b`, etc.
 - **Groq**: `openai/gpt-oss-20b`, `openai/gpt-oss-120b`, etc.

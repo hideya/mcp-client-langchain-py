@@ -32,21 +32,21 @@ def normalize_config(cfg: dict) -> LLMConfig:
     Normalize alias keys so internal code can rely on 'model_provider'.
     """
     print(cfg)
-    mp = cfg.get("model_provider")
     pv = cfg.get("provider")
+    mp = cfg.get("model_provider")
     print(mp, pv)
 
-    if mp is None and pv is None:
+    if pv is None and mp is None:
         raise ConfigValidationError(
-            f'Either "model_provider" or "provider" needs to be specified'
+            '"provider" needs to be specified'
         )
-    elif mp is not None and pv is not None:
+    elif pv is not None and mp is not None:
         raise ConfigValidationError(
-            f'Both "model_provider" and "provider" are specified'
+            'Both "provider" and "model_provider" are specified'
         )
-    elif mp is None and pv is not None:
-        cfg["model_provider"] = pv
-        del cfg["provider"]
+    elif pv is None and mp is not None:
+        cfg["provider"] = mp
+        del cfg["model_provider"]
 
     return cfg
 

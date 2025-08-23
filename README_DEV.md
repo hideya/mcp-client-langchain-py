@@ -8,7 +8,7 @@ When testing LLM and MCP servers, their settings can be conveniently configured 
 ```json5
 {
     "llm": {
-        "provider": "openai", "model": "gpt-4o-mini",
+        "provider": "openai", "model": "gpt-5-mini",
         // "provider": "anthropic", "model": "claude-3-5-haiku-latest",
         // "provider": "google_genai", "model": "gemini-2.5-flash",
     },
