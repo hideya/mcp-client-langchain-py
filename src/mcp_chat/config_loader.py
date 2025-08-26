@@ -31,10 +31,8 @@ def normalize_config(cfg: dict) -> LLMConfig:
     """
     Normalize alias keys so internal code can rely on 'model_provider'.
     """
-    print(cfg)
     pv = cfg.get("provider")
     mp = cfg.get("model_provider")
-    print(mp, pv)
 
     if pv is None and mp is None:
         raise ConfigValidationError(

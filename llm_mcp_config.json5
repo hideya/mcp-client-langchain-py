@@ -5,60 +5,20 @@
 // Keep all the credentials and private into the `.env` file
 // and refer to them with `${...}` notation as needed.
 {
-    // "llm": {
-    //     // https://docs.anthropic.com/en/docs/about-claude/pricing
-    //     // https://console.anthropic.com/settings/billing
-    //     "provider": "anthropic",
-    //     "model": "claude-3-5-haiku-latest",
-    //     // "model": "claude-sonnet-4-0",
-    //     // "temperature": 0.0,
-    //     // "max_tokens": 10000,
-    // },
-
-    // "llm": {
-    //     // https://platform.openai.com/docs/pricing
-    //     // https://platform.openai.com/settings/organization/billing/overview
-    //     "provider": "openai",
-    //     "model": "gpt-4.1-nano",
-    //     // "model": "gpt-5-mini",
-    //     // "temperature": 0.0,  //  'temperature' is not supported with "o4-mini"
-    //     // "max_completion_tokens": 10000,  //  Use 'max_completion_tokens' instead of 'max_tokens'
-    // },
-
     "llm": {
-        // https://ai.google.dev/gemini-api/docs/pricing
-        // https://console.cloud.google.com/billing
-        "provider": "google_genai",
-        "model": "gemini-2.5-flash",
-        // "model": "gemini-2.5-pro",
-        // "temperature": 0.0,
-        // "max_tokens": 10000,
+        "provider": "openai",       "model": "gpt-5-mini"
+        // "provider": "anthropic",    "model": "claude-3-5-haiku-latest"
+        // "provider": "google_genai", "model": "gemini-2.5-flash"
+        // "provider": "xai",          "model": "grok-3-mini"
+        // "provider": "cerebras",     "model": "gpt-oss-120b"
+        // "provider": "groq",         "model": "openai/gpt-oss-20b"
     },
 
-    // "llm": {
-    //     // hhttps://console.x.ai/
-    //     "provider": "xai",
-    //     "model": "grok-3-mini",
-    //     // "model": "grok-4",
-    // },
-
-    // "llm": {
-    //     // https://cloud.cerebras.ai
-    //     "provider": "cerebras",
-    //     "model": "gpt-oss-120b",
-    // },
-
-    // "llm": {
-    //     // ttps://console.groq.com/keys
-    //     "provider": "groq",
-    //     // "model": "openai/gpt-oss-20b",
-    //     "model": "openai/gpt-oss-120b",
-    // },
-
     "example_queries": [
-        "Read the news headlines on bbc.com",
+        "Summarize the beginning of the news headlines on BBC.com.",
         "Read and briefly summarize the LICENSE file",
         "Are there any weather alerts in California?",
+        // "Tell me about my GitHub profile"",
         // "What's the news from Tokyo today?",
         // "Open the webpage at bbc.com",
         // "Tell me about my Notion account",
@@ -113,7 +73,7 @@
         // "github": {
         //   // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
         //   "type": "http",  // or `transport: "http",`
-        //   "url": "https://api.githubcopilot.com/mcp/",
+        //   "url": "https://api.githubcopilot.com/mcp",
         //   "headers": {
         //     "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
         //   }
