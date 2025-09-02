@@ -87,10 +87,6 @@ A TypeScript equivalent of this utility is available [here](https://www.npmjs.co
   Then, it applies the environment variables specified in the `.env` file,
   as well as the ones that are already defined.
 
-## Building from Source
-
-See [README_DEV.md](https://github.com/hideya/mcp-client-langchain-py/blob/main/README_DEV.md) for details.
-
 ## Features
 
 - **Easy setup**: Works out of the box with popular MCP servers
@@ -218,6 +214,7 @@ Create a `llm_mcp_config.json5` file:
       "args": [ "mcp-server-fetch" ]
     },
 
+    // Embedding the value of an environment variable 
     "brave-search": {
       "command": "npx",
       "args": [ "-y", "@modelcontextprotocol/server-brave-search" ],
@@ -237,7 +234,13 @@ Create a `llm_mcp_config.json5` file:
       "headers": {
         "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
       }
-    }
+    },
+
+    // For MCP servers that require OAuth, consider using "mcp-remote"
+    "notion": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
+    },
   }
 }
 ```
@@ -275,6 +278,10 @@ There are quite a few useful MCP servers already available:
 ## Change Log
 
 Can be found [here](https://github.com/hideya/mcp-client-langchain-py/blob/main/CHANGELOG.md)
+
+## Building from Source
+
+See [README_DEV.md](https://github.com/hideya/mcp-client-langchain-py/blob/main/README_DEV.md) for details.
 
 ## License
 
