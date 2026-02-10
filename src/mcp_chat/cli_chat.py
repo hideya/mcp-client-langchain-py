@@ -233,7 +233,8 @@ async def handle_conversation(
                         text_parts.append(block)
                     elif hasattr(block, "text"):
                         text_parts.append(block.text)
-                response = "".join(text_parts)
+                response = " ".join(text_parts) if text_parts else ""
+                print(response)
             else:
                 raise TypeError(
                     f"Unexpected response content type: {type(response_content)}"

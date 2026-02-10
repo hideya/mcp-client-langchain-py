@@ -7,7 +7,7 @@
 {
     "llm": {
         // https://developers.openai.com/api/docs/pricing
-        // "provider": "openai",       "model": "gpt-5-mini"
+        "provider": "openai",       "model": "gpt-5-mini"
         // "provider": "openai",       "model": "gpt-5.2"
 
         // https://platform.claude.com/docs/en/about-claude/models/overview
@@ -16,7 +16,7 @@
 
         // https://ai.google.dev/gemini-api/docs/pricing
         // "provider": "google_genai", "model": "gemini-2.5-flash"
-        "provider": "google_genai", "model": "gemini-3-flash-preview"
+        // "provider": "google_genai", "model": "gemini-3-flash-preview"
 
         // https://docs.x.ai/developers/models
         // "provider": "xai",          "model": "grok-3-mini"
