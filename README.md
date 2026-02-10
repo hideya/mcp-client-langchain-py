@@ -275,13 +275,13 @@ There are quite a few useful MCP servers already available:
 - Use `--verbose` flag to view the detailed logs
 - Refer to [Debugging Section in MCP documentation](https://modelcontextprotocol.io/docs/tools/debugging)
 
-## Change Log
-
-Can be found [here](https://github.com/hideya/mcp-client-langchain-py/blob/main/CHANGELOG.md)
-
 ## Building from Source
 
 See [README_DEV.md](https://github.com/hideya/mcp-client-langchain-py/blob/main/README_DEV.md) for details.
+
+## Change Log
+
+Can be found [here](https://github.com/hideya/mcp-client-langchain-py/blob/main/CHANGELOG.md)
 
 ## License
 

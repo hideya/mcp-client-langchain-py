@@ -18,7 +18,7 @@ clean:
 
 cleanall:
 	git clean -fdxn -e .env
-	@read -p 'OK?'
+	@read -p 'OK? '
 	git clean -fdx -e .env
 
 build: clean

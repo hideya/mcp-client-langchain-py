@@ -6,16 +6,31 @@
 // and refer to them with `${...}` notation as needed.
 {
     "llm": {
-        "provider": "openai",       "model": "gpt-5-mini"
+        // https://developers.openai.com/api/docs/pricing
+        // "provider": "openai",       "model": "gpt-5-mini"
+        // "provider": "openai",       "model": "gpt-5.2"
+
+        // https://platform.claude.com/docs/en/about-claude/models/overview
         // "provider": "anthropic",    "model": "claude-3-5-haiku-latest"
+        // "provider": "anthropic",    "model": "claude-haiku-4-5"
+
+        // https://ai.google.dev/gemini-api/docs/pricing
         // "provider": "google_genai", "model": "gemini-2.5-flash"
+        "provider": "google_genai", "model": "gemini-3-flash-preview" // BROKEN=============
+
+        // https://docs.x.ai/developers/models
         // "provider": "xai",          "model": "grok-3-mini"
+        // "provider": "xai",          "model": "grok-4-1-fast-non-reasoning"
+
+        // https://inference-docs.cerebras.ai/models/overview
         // "provider": "cerebras",     "model": "gpt-oss-120b"
+
+        // https://groq.com/pricing
         // "provider": "groq",         "model": "openai/gpt-oss-20b"
     },
 
     "example_queries": [
-        "Summarize the beginning of the news headlines on BBC.com.",
+        "Fetch the raw HTML content from bbc.com and tell me the titile",
         "Read and briefly summarize the LICENSE file",
         "Are there any weather alerts in California?",
         // "Tell me about my GitHub profile"",
@@ -94,15 +109,34 @@
         //     "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
         // },
 
-        // notion: {
-        //   "command": "npx",
-        //   "args": ["-y", "@notionhq/notion-mcp-server"],
-        //   "env": {
-        //     // Although the following implies that this MCP server is designed for
-        //     // OpenAI LLMs, it works fine with others models.
-        //     // Tested with Claude and Gemini.
-        //     "OPENAPI_MCP_HEADERS": '{"Authorization": "Bearer ${NOTION_INTEGRATION_SECRET}", "Notion-Version": "2022-06-28"}'
-        //   },
+        // // NOTE: comment out "fetch" when you use "notion".
+        // // They both have a tool named "fetch," which causes a conflict.
+        // //
+        // // Run Notion remote MCP server via mcp-remote
+        // "notionMCP": {
+        //     "command": "npx",  // OAuth via "mcp-remote"
+        //     "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
+        // },
+
+        // The following Notion local MCP server is not recommended anymore?
+        // Refs:
+        // - https://developers.notion.com/docs/get-started-with-mcp
+        // - https://www.npmjs.com/package/@notionhq/notion-mcp-server
+        //
+        // "notionApi": {
+        //     "command": "npx",
+        //     "args": ["-y", "@notionhq/notion-mcp-server"],
+        //     "env": {
+        //         "NOTION_TOKEN": "${NOTION_INTEGRATION_SECRET}"
+        //     }
+        // },
+
+        // "airtable": {
+        //     "command": "npx",
+        //     "args": ["-y", "airtable-mcp-server"],
+        //     "env": {
+        //         "AIRTABLE_API_KEY": "${AIRTABLE_API_KEY}",
+        //     }
         // },
     }
 }
