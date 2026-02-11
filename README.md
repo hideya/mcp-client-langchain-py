@@ -6,7 +6,7 @@
 A simple, text-based CLI client for [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers built with LangChain and Python.  
 Suitable for testing MCP servers, exploring their capabilities, and prototyping integrations.
 
-Internally it uses [LangChain ReAct Agent](https://langchain-ai.github.io/langgraph/reference/agents/) and
+Internally it uses [LangChain Agent](https://docs.langchain.com/oss/python/langchain/agents) and
 a utility function `convert_mcp_to_langchain_tools()` from [`langchain_mcp_tools`](https://pypi.org/project/langchain-mcp-tools/).  
 
 A TypeScript equivalent of this utility is available [here](https://www.npmjs.com/package/@h1deya/mcp-try-cli)
@@ -161,51 +161,46 @@ Create a `llm_mcp_config.json5` file:
 ```json5
 {
   "llm": {
-    "provider": "openai",
-    "model": "gpt-4.1-nano",
-    // model: "gpt-5-mini",
+    // https://developers.openai.com/api/docs/pricing
+    "provider": "openai",       "model": "gpt-5-mini"
+    // "provider": "openai",       "model": "gpt-5.2"
+
+    // https://platform.claude.com/docs/en/about-claude/models/overview
+    // "provider": "anthropic",    "model": "claude-3-5-haiku-latest"
+    // "provider": "anthropic",    "model": "claude-haiku-4-5"
+
+    // https://ai.google.dev/gemini-api/docs/pricing
+    // "provider": "google_genai", "model": "gemini-2.5-flash"
+    // "provider": "google_genai", "model": "gemini-3-flash-preview"
+
+    // https://docs.x.ai/developers/models
+    // "provider": "xai",          "model": "grok-3-mini"
+    // "provider": "xai",          "model": "grok-4-1-fast-non-reasoning"
+
+    // https://inference-docs.cerebras.ai/models/overview
+    // "provider": "cerebras",     "model": "gpt-oss-120b"
+
+    // https://groq.com/pricing
+    // "provider": "groq",         "model": "openai/gpt-oss-20b"
   },
 
-  // "llm": {
-  //   "provider": "anthropic",
-  //   "model": "claude-3-5-haiku-latest",
-  //   // "model": "claude-sonnet-4-0",
-  // },
-
-  // "llm": {
-  //   "provider": "google_genai",
-  //   "model": "gemini-2.5-flash",
-  //   // "model": "gemini-2.5-pro",
-  // },
-
-  // "llm": {
-  //   "provider": "xai",
-  //   "model": "grok-3-mini",
-  //   // "model": "grok-4",
-  // },
-
-  // "llm": {
-  //   "provider": "cerebras",
-  //   "model": "gpt-oss-120b",
-  // },
-
-  // "llm": {
-  //   "provider": "groq",
-  //   "model": "openai/gpt-oss-20b",
-  //   // "model": "openai/gpt-oss-120b",
-  // },
-
   "example_queries": [
-    "Tell me how LLMs work in a few sentences",
-    "Are there any weather alerts in California?",
-    "Read the news headlines on bbc.com",
+    "Read and briefly summarize the LICENSE file in the current directory",
+    "Fetch the raw HTML content from bbc.com and tell me the titile",
+    "Search for 'news in California' and show the first hit",
+    "Tell me about my GitHub profile",
+    "Tell me about my Notion account",
   ],
 
   "mcp_servers": {
     // Local MCP server that uses `npx`
-    "weather": {
-      "command": "npx", 
-      "args": [ "-y", "@h1deya/mcp-server-weather" ]
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."  // path to a directory to allow access to
+      ]
     },
 
     // Another local server that uses `uvx`
@@ -219,12 +214,6 @@ Create a `llm_mcp_config.json5` file:
       "command": "npx",
       "args": [ "-y", "@modelcontextprotocol/server-brave-search" ],
       "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
-    },
-
-    // Remote MCP server via URL
-    // Auto-detection: tries Streamable HTTP first, falls back to SSE
-    "remote-mcp-server": {
-      "url": "https://api.example.com/..."
     },
 
     // Server with authentication
@@ -275,13 +264,13 @@ There are quite a few useful MCP servers already available:
 - Use `--verbose` flag to view the detailed logs
 - Refer to [Debugging Section in MCP documentation](https://modelcontextprotocol.io/docs/tools/debugging)
 
-## Change Log
-
-Can be found [here](https://github.com/hideya/mcp-client-langchain-py/blob/main/CHANGELOG.md)
-
 ## Building from Source
 
 See [README_DEV.md](https://github.com/hideya/mcp-client-langchain-py/blob/main/README_DEV.md) for details.
+
+## Change Log
+
+Can be found [here](https://github.com/hideya/mcp-client-langchain-py/blob/main/CHANGELOG.md)
 
 ## License
 

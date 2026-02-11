@@ -6,36 +6,49 @@
 // and refer to them with `${...}` notation as needed.
 {
     "llm": {
+        // https://developers.openai.com/api/docs/pricing
         "provider": "openai",       "model": "gpt-5-mini"
+        // "provider": "openai",       "model": "gpt-5.2"
+
+        // https://platform.claude.com/docs/en/about-claude/models/overview
         // "provider": "anthropic",    "model": "claude-3-5-haiku-latest"
+        // "provider": "anthropic",    "model": "claude-haiku-4-5"
+
+        // https://ai.google.dev/gemini-api/docs/pricing
         // "provider": "google_genai", "model": "gemini-2.5-flash"
+        // "provider": "google_genai", "model": "gemini-3-flash-preview"
+
+        // https://docs.x.ai/developers/models
         // "provider": "xai",          "model": "grok-3-mini"
+        // "provider": "xai",          "model": "grok-4-1-fast-non-reasoning"
+
+        // https://inference-docs.cerebras.ai/models/overview
         // "provider": "cerebras",     "model": "gpt-oss-120b"
+
+        // https://groq.com/pricing
         // "provider": "groq",         "model": "openai/gpt-oss-20b"
     },
 
     "example_queries": [
-        "Summarize the beginning of the news headlines on BBC.com.",
-        "Read and briefly summarize the LICENSE file",
-        "Are there any weather alerts in California?",
-        // "Tell me about my GitHub profile"",
-        // "What's the news from Tokyo today?",
-        // "Open the webpage at bbc.com",
+        "Read and briefly summarize the LICENSE file in the current directory",
+        "Fetch the raw HTML content from bbc.com and tell me the titile",
+        // "Search for 'news in California' and show the first hit",
+        // "Tell me about my GitHub profile",
         // "Tell me about my Notion account",
     ],
 
     "mcp_servers": {
-        // https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem
+        // https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem
         "filesystem": {
             "command": "npx",
             "args": [
                 "-y",
                 "@modelcontextprotocol/server-filesystem",
-                "."
+                "."  // path to a directory to allow access to
             ]
         },
 
-        // https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
+        // https://pypi.org/project/mcp-server-fetch/
         "fetch": {
             "command": "uvx",
             "args": [
@@ -43,66 +56,34 @@
             ]
         },
 
-        // https://github.com/modelcontextprotocol/quickstart-resources/tree/main/weather-server-python
-        "us-weather": {  // US weather only
-            "command": "npx",
-            "args": [
-                "-y",
-                "@h1deya/mcp-server-weather"
-            ]
-        },
-
-        // // Auto-detection: tries Streamable HTTP first, falls back to SSE
-        // "auto-detect-server": {
-        //     "url": "http://${SERVER_HOST}:${SERVER_PORT}/..."
-        // },
-
-        // // WebSocket
-        // "ws-server-name": {
-        //     "url": "ws://${WS_SERVER_HOST}:${WS_SERVER_PORT}/..."
-        // },
-
-        // // Test SSE connection with the auto fallback
-        // // See the comments at the top of src/index.ts
-        // us-weather: {
-        //     "url": "http://localhost:${SSE_SERVER_PORT}/sse"
+        // // https://www.npmjs.com/package/@modelcontextprotocol/server-brave-search
+        // "brave-search": {
+        //     "command": "npx",
+        //     "args": [
+        //         "-y",
+        //         "@modelcontextprotocol/server-brave-search"
+        //     ],
+        //     "env": {
+        //         "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+        //     }
         // },
 
         // // Example of authentication via Authorization header
         // // https://github.com/github/github-mcp-server?tab=readme-ov-file#remote-github-mcp-server
         // "github": {
-        //   // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
-        //   "type": "http",  // or `transport: "http",`
-        //   "url": "https://api.githubcopilot.com/mcp",
-        //   "headers": {
-        //     "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
-        //   }
+        //     // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
+        //     "type": "http",
+        //     // "__pre_validate_authentication": False,
+        //     "url": "https://api.githubcopilot.com/mcp/",
+        //     "headers": {
+        //         "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+        //     }
         // },
-        // // NOTE: When accessing the GitHub MCP server, [GitHub PAT (Personal Access Token)](https://github.com/settings/personal-access-tokens)
-        // // alone is not enough; your GitHub account must have an active Copilot subscription or be assigned a Copilot license through your organization.
-
-        // // https://github.com/microsoft/playwright-mcp
-        // "playwright": {
+        
+        // // For MCP servers that require OAuth, consider using "mcp-remote"
+        // "notion": {
         //     "command": "npx",
-        //     "args": [ "-y", "@playwright/mcp@latest" ]
-        // },
-
-        // // https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search
-        // "brave-search": {
-        //     "command": "npx",
-        //     "args": [ "-y", "@modelcontextprotocol/server-brave-search"],
-        //     "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
-        // },
-
-        // notion: {
-        //   "command": "npx",
-        //   "args": ["-y", "@notionhq/notion-mcp-server"],
-        //   "env": {
-        //     // Although the following implies that this MCP server is designed for
-        //     // OpenAI LLMs, it works fine with others models.
-        //     // Tested with Claude and Gemini.
-        //     "OPENAPI_MCP_HEADERS": '{"Authorization": "Bearer ${NOTION_INTEGRATION_SECRET}", "Notion-Version": "2022-06-28"}'
-        //   },
+        //     "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
         // },
     }
 }
