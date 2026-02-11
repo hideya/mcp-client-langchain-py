@@ -38,6 +38,7 @@
     ],
 
     "mcp_servers": {
+        // Local MCP server that uses `npx`
         // https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem
         "filesystem": {
             "command": "npx",
@@ -48,6 +49,7 @@
             ]
         },
 
+        // Local MCP server that uses `uvx`
         // https://pypi.org/project/mcp-server-fetch/
         "fetch": {
             "command": "uvx",
@@ -56,6 +58,7 @@
             ]
         },
 
+        // // Embedding the value of an environment variable
         // // https://www.npmjs.com/package/@modelcontextprotocol/server-brave-search
         // "brave-search": {
         //     "command": "npx",
@@ -68,7 +71,7 @@
         //     }
         // },
 
-        // // Example of authentication via Authorization header
+        // // Example of remote MCP server authentication via Authorization header
         // // https://github.com/github/github-mcp-server?tab=readme-ov-file#remote-github-mcp-server
         // "github": {
         //     // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
@@ -80,7 +83,7 @@
         //     }
         // },
         
-        // // For MCP servers that require OAuth, consider using "mcp-remote"
+        // // For remote MCP servers that require OAuth, consider using "mcp-remote"
         // "notion": {
         //     "command": "npx",
         //     "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],

@@ -46,9 +46,9 @@ A TypeScript equivalent of this utility is available [here](https://www.npmjs.co
   {
     "llm": {
       "provider": "openai",       "model": "gpt-5-mini",
-      // "provider": "anthropic",    "model": "claude-3-5-haiku-latest",
+      // "provider": "anthropic",    "model": "claude-haiku-4-5",
       // "provider": "google_genai", "model": "gemini-2.5-flash",
-      // "provider": "xai",          "model": "grok-3-mini",
+      // "provider": "xai",          "model": "grok-4-1-fast-non-reasoning",
       // "provider": "cerebras",     "model": "gpt-oss-120b",
       // "provider": "groq",         "model": "openai/gpt-oss-20b",
     },
@@ -216,7 +216,7 @@ Create a `llm_mcp_config.json5` file:
       "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
     },
 
-    // Server with authentication
+    // Remote MCP server with authentication
     "github": {
       "type": "http",  // recommended to specify the protocol explicitly when authentication is used
       "url": "https://api.githubcopilot.com/mcp/",
@@ -225,7 +225,7 @@ Create a `llm_mcp_config.json5` file:
       }
     },
 
-    // For MCP servers that require OAuth, consider using "mcp-remote"
+    // For remote MCP servers that require OAuth, consider using "mcp-remote"
     "notion": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
