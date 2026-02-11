@@ -16,15 +16,15 @@ from typing import (
 try:
     from dotenv import load_dotenv
     from langchain.chat_models import init_chat_model
-    from langchain.schema import (
+    from langchain_core.messages import (
         AIMessage,
         BaseMessage,
         HumanMessage,
         SystemMessage,
+        ToolMessage,
     )
     from langchain_core.runnables.base import Runnable
-    from langchain_core.messages.tool import ToolMessage
-    from langgraph.prebuilt import create_react_agent
+    from langchain.agents import create_agent
     from langchain_mcp_tools import (
         convert_mcp_to_langchain_tools,
         McpServerCleanupFn,
@@ -218,10 +218,27 @@ async def handle_conversation(
 
             result_messages = cast(list[BaseMessage], result["messages"])
             # the last message should be an AIMessage
-            response = result_messages[-1].content
-            if not isinstance(response, str):
+            response_content = result_messages[-1].content
+            
+            # Handle both string and list content (for multimodal models)
+            # NOTE: Gemini 3 preview returns a list content, even for a single text
+            if isinstance(response_content, str):
+                response = response_content
+            elif isinstance(response_content, list):
+                # Extract text from content blocks
+                text_parts = []
+                for block in response_content:
+                    if isinstance(block, dict) and "text" in block:
+                        text_parts.append(block["text"])
+                    elif isinstance(block, str):
+                        text_parts.append(block)
+                    elif hasattr(block, "text"):
+                        text_parts.append(block.text)
+                response = " ".join(text_parts) if text_parts else ""
+                print(response)
+            else:
                 raise TypeError(
-                    f"Expected string response, got {type(response)}"
+                    f"Unexpected response content type: {type(response_content)}"
                 )
 
             # check if msg one before is a ToolMessage
@@ -318,7 +335,7 @@ async def init_react_agent(
         logger
     )
 
-    agent = create_react_agent(
+    agent = create_agent(
         llm,
         tools
     )
@@ -328,7 +345,7 @@ async def init_react_agent(
     if system_prompt and isinstance(system_prompt, str):
         messages.append(SystemMessage(content=system_prompt))
 
-    return agent, messages, mcp_cleanup, log_file_exit_stack
+    return agent, llm, messages, mcp_cleanup, log_file_exit_stack
 
 
 async def run() -> None:
@@ -355,9 +372,13 @@ async def run() -> None:
             else []
         )
 
-        agent, messages, mcp_cleanup, log_file_exit_stack = (
+        agent, llm, messages, mcp_cleanup, log_file_exit_stack = (
             await init_react_agent(config, logger, args.log_dir)
         )
+        
+        print("\x1b[32m", end="")  # color to green
+        print("\nLLM model:", getattr(llm, 'model', getattr(llm, 'model_name', 'unknown')))
+        print("\x1b[0m", end="")  # reset the color   
 
         await handle_conversation(
             agent,
