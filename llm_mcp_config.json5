@@ -30,27 +30,27 @@
     },
 
     "example_queries": [
-        "Fetch the raw HTML content from bbc.com and tell me the titile",
-        "Read and briefly summarize the LICENSE file",
-        "Are there any weather alerts in California?",
-        // "Tell me about my GitHub profile"",
-        // "What's the news from Tokyo today?",
-        // "Open the webpage at bbc.com",
+        "Read and briefly summarize the LICENSE file in the current directory",
+        // "Fetch the raw HTML content from bbc.com and tell me the titile",
+        // // NOTE: The following is to test tool call error handling
+        // "Try to fetch the raw HTML content from abc.bbc.com, bbc.com and xyz.bbc.com, and tell me which is succesful",
+        // "Search for 'news in California' and show the first hit",
+        // "Tell me about my GitHub profile",
         // "Tell me about my Notion account",
     ],
 
     "mcp_servers": {
-        // https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem
+        // https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem
         "filesystem": {
             "command": "npx",
             "args": [
                 "-y",
                 "@modelcontextprotocol/server-filesystem",
-                "."
+                "."  // path to a directory to allow access to
             ]
         },
 
-        // https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
+        // https://pypi.org/project/mcp-server-fetch/
         "fetch": {
             "command": "uvx",
             "args": [
@@ -58,85 +58,34 @@
             ]
         },
 
-        // https://github.com/modelcontextprotocol/quickstart-resources/tree/main/weather-server-python
-        "us-weather": {  // US weather only
+        // https://www.npmjs.com/package/@modelcontextprotocol/server-brave-search
+        "brave-search": {
             "command": "npx",
             "args": [
                 "-y",
-                "@h1deya/mcp-server-weather"
-            ]
+                "@modelcontextprotocol/server-brave-search"
+            ],
+            "env": {
+                "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+            }
         },
 
-        // // Auto-detection: tries Streamable HTTP first, falls back to SSE
-        // "auto-detect-server": {
-        //     "url": "http://${SERVER_HOST}:${SERVER_PORT}/..."
-        // },
-
-        // // WebSocket
-        // "ws-server-name": {
-        //     "url": "ws://${WS_SERVER_HOST}:${WS_SERVER_PORT}/..."
-        // },
-
-        // // Test SSE connection with the auto fallback
-        // // See the comments at the top of src/index.ts
-        // us-weather: {
-        //     "url": "http://localhost:${SSE_SERVER_PORT}/sse"
-        // },
-
-        // // Example of authentication via Authorization header
-        // // https://github.com/github/github-mcp-server?tab=readme-ov-file#remote-github-mcp-server
-        // "github": {
-        //   // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
-        //   "type": "http",  // or `transport: "http",`
-        //   "url": "https://api.githubcopilot.com/mcp",
-        //   "headers": {
-        //     "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
-        //   }
-        // },
-        // // NOTE: When accessing the GitHub MCP server, [GitHub PAT (Personal Access Token)](https://github.com/settings/personal-access-tokens)
-        // // alone is not enough; your GitHub account must have an active Copilot subscription or be assigned a Copilot license through your organization.
-
-        // // https://github.com/microsoft/playwright-mcp
-        // "playwright": {
-        //     "command": "npx",
-        //     "args": [ "-y", "@playwright/mcp@latest" ]
-        // },
-
-        // // https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search
-        // "brave-search": {
-        //     "command": "npx",
-        //     "args": [ "-y", "@modelcontextprotocol/server-brave-search"],
-        //     "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
-        // },
-
-        // // NOTE: comment out "fetch" when you use "notion".
-        // // They both have a tool named "fetch," which causes a conflict.
-        // //
-        // // Run Notion remote MCP server via mcp-remote
-        // "notionMCP": {
-        //     "command": "npx",  // OAuth via "mcp-remote"
-        //     "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
-        // },
-
-        // The following Notion local MCP server is not recommended anymore?
-        // Refs:
-        // - https://developers.notion.com/docs/get-started-with-mcp
-        // - https://www.npmjs.com/package/@notionhq/notion-mcp-server
-        //
-        // "notionApi": {
-        //     "command": "npx",
-        //     "args": ["-y", "@notionhq/notion-mcp-server"],
-        //     "env": {
-        //         "NOTION_TOKEN": "${NOTION_INTEGRATION_SECRET}"
-        //     }
-        // },
-
-        // "airtable": {
-        //     "command": "npx",
-        //     "args": ["-y", "airtable-mcp-server"],
-        //     "env": {
-        //         "AIRTABLE_API_KEY": "${AIRTABLE_API_KEY}",
-        //     }
-        // },
+        // Example of authentication via Authorization header
+        // https://github.com/github/github-mcp-server?tab=readme-ov-file#remote-github-mcp-server
+        "github": {
+            // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
+            "type": "http",
+            // "__pre_validate_authentication": False,
+            "url": "https://api.githubcopilot.com/mcp/",
+            "headers": {
+                "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+            }
+        },
+        
+        // For MCP servers that require OAuth, consider using "mcp-remote"
+        "notion": {
+            "command": "npx",
+            "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
+        },
     }
 }

@@ -221,6 +221,7 @@ async def handle_conversation(
             response_content = result_messages[-1].content
             
             # Handle both string and list content (for multimodal models)
+             # NOTE: Gemini 3 preview returns a list content, even for a single text
             if isinstance(response_content, str):
                 response = response_content
             elif isinstance(response_content, list):
@@ -344,7 +345,7 @@ async def init_react_agent(
     if system_prompt and isinstance(system_prompt, str):
         messages.append(SystemMessage(content=system_prompt))
 
-    return agent, messages, mcp_cleanup, log_file_exit_stack
+    return agent, llm, messages, mcp_cleanup, log_file_exit_stack
 
 
 async def run() -> None:
@@ -371,9 +372,13 @@ async def run() -> None:
             else []
         )
 
-        agent, messages, mcp_cleanup, log_file_exit_stack = (
+        agent, llm, messages, mcp_cleanup, log_file_exit_stack = (
             await init_react_agent(config, logger, args.log_dir)
         )
+        
+        print("\x1b[32m", end="")  # color to green
+        print("\nLLM model:", getattr(llm, 'model', getattr(llm, 'model_name', 'unknown')))
+        print("\x1b[0m", end="")  # reset the color   
 
         await handle_conversation(
             agent,

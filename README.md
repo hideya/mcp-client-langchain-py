@@ -198,7 +198,7 @@ Create a `llm_mcp_config.json5` file:
   "example_queries": [
     "Tell me how LLMs work in a few sentences",
     "Are there any weather alerts in California?",
-    "Read the news headlines on bbc.com",
+    "Fetch the raw HTML content from bbc.com and tell me the titile",
   ],
 
   "mcp_servers": {

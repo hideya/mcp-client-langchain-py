@@ -887,7 +887,7 @@ wheels = [
 
 [[package]]
 name = "langchain-mcp-tools"
-version = "0.2.13"
+version = "0.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsonschema-pydantic" },
@@ -895,9 +895,9 @@ dependencies = [
     { name = "langchain-core" },
     { name = "mcp" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4a/06/fdc97529d30436a8fe474fd53fdff693c53bf93fd45b69cfb0c359e1eb8e/langchain_mcp_tools-0.2.13.tar.gz", hash = "sha256:776eca73abee602f54d62fdaaa5d2f640a2da93f3ecfefa4a421075a0ab8a80b", size = 27640, upload-time = "2025-08-17T17:52:28.734Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/93/e3/fc810105865a5765b4cbe14f472e6c2252eab8d838e285dbe6fe59a06f2d/langchain_mcp_tools-0.3.0.tar.gz", hash = "sha256:f164de89f85e196dc4d85ba8a7763bbe814d59d040874b249eeec0d3b490d828", size = 27990, upload-time = "2026-02-11T06:35:31.86Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e4/68/6aa7de9e8daa0f58af2a1fb740d5fabfcd5dc329183190803d74caef7751/langchain_mcp_tools-0.2.13-py3-none-any.whl", hash = "sha256:55d00650bbd308f60f88d315448b4446ab2a6917a049f01b72012f9966534824", size = 23541, upload-time = "2025-08-17T17:52:27.34Z" },
+    { url = "https://files.pythonhosted.org/packages/d7/3a/54d87b3d683a4825c6c80aad3935c209512b49852b33d673ccbb029887f4/langchain_mcp_tools-0.3.0-py3-none-any.whl", hash = "sha256:4475bc4a6107872e20a1641722bf52fae1a14ee128ec85f43f28ba0d312eaf9f", size = 23750, upload-time = "2026-02-11T06:35:29.795Z" },
 ]
 
 [[package]]
@@ -1055,7 +1055,7 @@ requires-dist = [
     { name = "langchain-cerebras", specifier = ">=0.8.2" },
     { name = "langchain-google-genai", specifier = ">=4.2.0" },
     { name = "langchain-groq", specifier = ">=1.1.2" },
-    { name = "langchain-mcp-tools", specifier = ">=0.2.12" },
+    { name = "langchain-mcp-tools", specifier = ">=0.3.0" },
     { name = "langchain-openai", specifier = ">=1.1.8" },
     { name = "langchain-xai", specifier = ">=1.2.2" },
     { name = "pyjson5", specifier = ">=1.6.8" },

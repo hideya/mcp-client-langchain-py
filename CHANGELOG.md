@@ -8,7 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [0.3.0] - 2026-02-11
+
 ### Changed
+- Update for compatibility with LangChain 1.2.x and Gemini 3 preview
 - README_DEV.md, which was totally broken
 
 
