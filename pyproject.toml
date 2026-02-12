@@ -27,7 +27,6 @@ dependencies = [
     "langchain-xai>=1.2.2",
     "pyjson5>=1.6.8",
     "python-dotenv>=1.0.1",
-    "websockets>=15.0.1",
     "langchain-cerebras>=0.8.2",
     "langchain-groq>=1.1.2",
 ]

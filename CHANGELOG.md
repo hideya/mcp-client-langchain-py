@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Remove unnecessary dependency on websocket
+
 
 ## [0.3.0] - 2026-02-11
 

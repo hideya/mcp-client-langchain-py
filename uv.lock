@@ -1045,7 +1045,6 @@ dependencies = [
     { name = "langchain-xai" },
     { name = "pyjson5" },
     { name = "python-dotenv" },
-    { name = "websockets" },
 ]
 
 [package.metadata]
@@ -1060,7 +1059,6 @@ requires-dist = [
     { name = "langchain-xai", specifier = ">=1.2.2" },
     { name = "pyjson5", specifier = ">=1.6.8" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "websockets", specifier = ">=15.0.1" },
 ]
 
 [[package]]

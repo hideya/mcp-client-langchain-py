@@ -76,7 +76,6 @@
         // "github": {
         //     // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
         //     "type": "http",
-        //     // "__pre_validate_authentication": False,
         //     "url": "https://api.githubcopilot.com/mcp/",
         //     "headers": {
         //         "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
