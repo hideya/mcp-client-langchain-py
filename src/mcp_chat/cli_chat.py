@@ -75,7 +75,7 @@ def parse_arguments() -> argparse.Namespace:
     except ImportError:
         # Fallback for development (running script directly)
         version = "dev"
-    
+
     parser = argparse.ArgumentParser(
         description="CLI Chat Application",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -126,12 +126,12 @@ def init_logger(verbose: bool) -> logging.Logger:
     """Initialize and return a logger with appropriate verbosity level."""
     handler = logging.StreamHandler()
     handler.setFormatter(ColorFormatter("%(levelname)s %(message)s"))
-    
+
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)
     logger.handlers = []  # Clear existing handlers
     logger.addHandler(handler)
-    
+
     return logger
 
 
@@ -219,7 +219,7 @@ async def handle_conversation(
             result_messages = cast(list[BaseMessage], result["messages"])
             # the last message should be an AIMessage
             response_content = result_messages[-1].content
-            
+
             # Handle both string and list content (for multimodal models)
             # NOTE: Gemini 3 preview returns a list content, even for a single text
             if isinstance(response_content, str):
@@ -282,7 +282,7 @@ async def init_react_agent(
     """
     llm_config = config["llm"]
     logger.info(f"Initializing model... {json.dumps(llm_config, indent=2)}\n")
-    
+
     if llm_config["model"] is None:
         print('"llm/model" needs to be specified')
         exit(1)
@@ -304,27 +304,27 @@ async def init_react_agent(
 
     mcp_servers = config["mcp_servers"]
     logger.info(f"Initializing {len(mcp_servers)} MCP server(s)...\n")
-    
+
     # Set up log directory and files for MCP servers
     log_file_exit_stack = ExitStack()
-    
+
     # Create log directory if specified
     if log_dir is not None:
         log_dir.mkdir(parents=True, exist_ok=True)
         logger.info(f"MCP server logs will be stored in: {log_dir.absolute()}")
-    
+
     for server_name in mcp_servers:
         server_config = mcp_servers[server_name]
         # Skip URL-based servers (no command)
         if "command" not in server_config:
             continue
-        
+
         # Determine log file path
         if log_dir is not None:
             log_path = log_dir / f"mcp-server-{server_name}.log"
         else:
             log_path = Path(f"mcp-server-{server_name}.log")
-        
+
         log_file = open(log_path, "w")
         server_config["errlog"] = log_file
         log_file_exit_stack.callback(log_file.close)
@@ -362,7 +362,7 @@ async def run() -> None:
             load_dotenv(env_file)
         else:
             load_dotenv()  # Fallback to default behavior
-        
+
         args = parse_arguments()
         logger = init_logger(args.verbose)
         config = load_config(args.config)
@@ -375,10 +375,10 @@ async def run() -> None:
         agent, llm, messages, mcp_cleanup, log_file_exit_stack = (
             await init_react_agent(config, logger, args.log_dir)
         )
-        
+
         print("\x1b[32m", end="")  # color to green
         print("\nLLM model:", getattr(llm, 'model', getattr(llm, 'model_name', 'unknown')))
-        print("\x1b[0m", end="")  # reset the color   
+        print("\x1b[0m", end="")  # reset the color
 
         await handle_conversation(
             agent,
@@ -386,26 +386,26 @@ async def run() -> None:
             example_queries,
             args.verbose
         )
-    
+
     except ConfigFileNotFoundError as e:
         print("Failed to load the config file")
         print(f'Make sure the config file "{args.config}" is available')
         print("Use the --config option to specify which JSON5 configuration file to read")
-        
+
     except ConfigValidationError as e:
         print("Something wrong in the config file")
         print(e)
-    
+
     except KeyError as e:
         print(f'Something wrong in the config file "{args.config}"')
         print(f"Key {e} cannot be found")
-        
+
     except McpInitializationError as e:
         logger.error(f"Failed to initialize: {e}")
-        
+
     except ImportError as e:
         logger.error("Failed to initialize LLM: Possibly unknown provider or model specified")
-    
+
     except FileNotFoundError as e:
         logger.error("Failed to start local MCP server")
 

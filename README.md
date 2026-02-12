@@ -203,7 +203,7 @@ Create a `llm_mcp_config.json5` file:
       ]
     },
 
-    // Another local server that uses `uvx`
+    // Local server that uses `uvx`
     "fetch": {
       "command": "uvx",
       "args": [ "mcp-server-fetch" ]

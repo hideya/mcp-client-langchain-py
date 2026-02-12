@@ -52,13 +52,13 @@ def normalize_config(cfg: dict) -> LLMConfig:
 def load_config(config_path: str):
     """Load and validate configuration from JSON5 file with environment
     variable substitution.
-    
+
     Args:
         config_path: Path to the JSON5 configuration file
-        
+
     Returns:
         dict: Parsed configuration with environment variables substituted
-        
+
     Raises:
         ConfigFileNotFoundError: If the config file doesn't exist
         ConfigValidationError: If environment variables are missing or parsing fails
@@ -79,13 +79,13 @@ def load_config(config_path: str):
     # (e.g., "// ${THIS_ENV_VAR_NOT_DEFINED_SO_COMMENTED_OUT_TO_AVOID_RAISING_EXCEPTION}")
     def replace_env_var(match):
         """Replace environment variable placeholder with actual value.
-        
+
         Args:
             match: Regex match object containing variable name
-            
+
         Returns:
             str: Environment variable value
-            
+
         Raises:
             ConfigValidationError: If environment variable is not found
         """
@@ -97,11 +97,11 @@ def load_config(config_path: str):
                 f'in "{config_file}" not found'
             )
         return env_value
-    
+
     # Process line by line to skip comments
     lines = content.split("\n")
     processed_lines = []
-    
+
     for line in lines:
         # Split line at first occurrence of "//" to separate code from comments
         if "//" in line:
@@ -114,14 +114,14 @@ def load_config(config_path: str):
         else:
             # No comment in line, apply substitution to entire line
             processed_line = re.sub(r"\$\{([^}]+)\}", replace_env_var, line)
-        
+
         processed_lines.append(processed_line)
-    
+
     content = "\n".join(processed_lines)
-    
+
     # Parse the processed content as JSON5
     config: dict[str, Any] = json5.loads(content)
-    
+
     config["llm"] = normalize_config(config["llm"])
-    
+
     return config

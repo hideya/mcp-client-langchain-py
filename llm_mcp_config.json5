@@ -82,7 +82,7 @@
         //         "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
         //     }
         // },
-        
+
         // // For remote MCP servers that require OAuth, consider using "mcp-remote"
         // "notion": {
         //     "command": "npx",
