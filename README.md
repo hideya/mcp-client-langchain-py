@@ -188,8 +188,8 @@ Create a `llm_mcp_config.json5` file:
     "Read and briefly summarize the LICENSE file in the current directory",
     "Fetch the raw HTML content from bbc.com and tell me the titile",
     "Search for 'news in California' and show the first hit",
-    "Tell me about my GitHub profile",
-    "Tell me about my Notion account",
+    "Tell me about my default GitHub profile",
+    "Tell me about my default Notion account",
   ],
 
   "mcp_servers": {
