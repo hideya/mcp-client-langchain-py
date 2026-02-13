@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [0.3.2] - 2026-02-13
+
 ### Changed
 - Show model provider name together with model name in the console log
-- Fix a broken link in README.md
+- Update json5 example file to use 2 space for tabs
+- Refine examples in README.md
 
 
 ## [0.3.1] - 2026-02-13

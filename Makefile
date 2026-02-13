@@ -21,7 +21,7 @@ cleanall:
 	@read -p 'OK? '
 	git clean -fdx -e .env
 
-build: clean
+build: cleanall
 	uv build
 	@echo
 	uvx twine check dist/*

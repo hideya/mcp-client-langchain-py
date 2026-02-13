@@ -5,87 +5,87 @@
 // Keep all the credentials and private into the `.env` file
 // and refer to them with `${...}` notation as needed.
 {
-    "llm": {
-        // https://developers.openai.com/api/docs/pricing
-        "provider": "openai",       "model": "gpt-5-mini"
-        // "provider": "openai",       "model": "gpt-5.2"
+  "llm": {
+    // https://developers.openai.com/api/docs/pricing
+    "provider": "openai",       "model": "gpt-5-mini"
+    // "provider": "openai",       "model": "gpt-5.2"
 
-        // https://platform.claude.com/docs/en/about-claude/models/overview
-        // "provider": "anthropic",    "model": "claude-3-5-haiku-latest"
-        // "provider": "anthropic",    "model": "claude-haiku-4-5"
+    // https://platform.claude.com/docs/en/about-claude/models/overview
+    // "provider": "anthropic",    "model": "claude-3-5-haiku-latest"
+    // "provider": "anthropic",    "model": "claude-haiku-4-5"
 
-        // https://ai.google.dev/gemini-api/docs/pricing
-        // "provider": "google_genai", "model": "gemini-2.5-flash"
-        // "provider": "google_genai", "model": "gemini-3-flash-preview"
+    // https://ai.google.dev/gemini-api/docs/pricing
+    // "provider": "google_genai", "model": "gemini-2.5-flash"
+    // "provider": "google_genai", "model": "gemini-3-flash-preview"
 
-        // https://docs.x.ai/developers/models
-        // "provider": "xai",          "model": "grok-3-mini"
-        // "provider": "xai",          "model": "grok-4-1-fast-non-reasoning"
+    // https://docs.x.ai/developers/models
+    // "provider": "xai",          "model": "grok-3-mini"
+    // "provider": "xai",          "model": "grok-4-1-fast-non-reasoning"
 
-        // https://inference-docs.cerebras.ai/models/overview
-        // "provider": "cerebras",     "model": "gpt-oss-120b"
+    // https://inference-docs.cerebras.ai/models/overview
+    // "provider": "cerebras",     "model": "gpt-oss-120b"
 
-        // https://groq.com/pricing
-        // "provider": "groq",         "model": "openai/gpt-oss-20b"
+    // https://groq.com/pricing
+    // "provider": "groq",         "model": "openai/gpt-oss-20b"
+  },
+
+  "example_queries": [
+    "Read and briefly summarize the LICENSE file in the current directory",
+    "Fetch the raw HTML content from bbc.com and tell me the titile",
+    // "Search for 'news in California' and show the first hit",
+    // "Tell me about my default GitHub profile",
+    // "Tell me about my default Notion account",
+  ],
+
+  "mcp_servers": {
+    // Local MCP server that uses `npx`
+    // https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."  // path to a directory to allow access to
+      ]
     },
 
-    "example_queries": [
-        "Read and briefly summarize the LICENSE file in the current directory",
-        "Fetch the raw HTML content from bbc.com and tell me the titile",
-        // "Search for 'news in California' and show the first hit",
-        // "Tell me about my default GitHub profile",
-        // "Tell me about my default Notion account",
-    ],
+    // Local MCP server that uses `uvx`
+    // https://pypi.org/project/mcp-server-fetch/
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ]
+    },
 
-    "mcp_servers": {
-        // Local MCP server that uses `npx`
-        // https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem
-        "filesystem": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@modelcontextprotocol/server-filesystem",
-                "."  // path to a directory to allow access to
-            ]
-        },
+    // // Embedding the value of an environment variable
+    // // https://www.npmjs.com/package/@modelcontextprotocol/server-brave-search
+    // "brave-search": {
+    //   "command": "npx",
+    //   "args": [
+    //     "-y",
+    //     "@modelcontextprotocol/server-brave-search"
+    //   ],
+    //   "env": {
+    //     "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+    //   }
+    // },
 
-        // Local MCP server that uses `uvx`
-        // https://pypi.org/project/mcp-server-fetch/
-        "fetch": {
-            "command": "uvx",
-            "args": [
-                "mcp-server-fetch"
-            ]
-        },
+    // // Example of remote MCP server authentication via Authorization header
+    // // https://github.com/github/github-mcp-server?tab=readme-ov-file#remote-github-mcp-server
+    // "github": {
+    //   // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
+    //   "type": "http",
+    //   "url": "https://api.githubcopilot.com/mcp/",
+    //   "headers": {
+    //     "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+    //   }
+    // },
 
-        // // Embedding the value of an environment variable
-        // // https://www.npmjs.com/package/@modelcontextprotocol/server-brave-search
-        // "brave-search": {
-        //     "command": "npx",
-        //     "args": [
-        //         "-y",
-        //         "@modelcontextprotocol/server-brave-search"
-        //     ],
-        //     "env": {
-        //         "BRAVE_API_KEY": "${BRAVE_API_KEY}"
-        //     }
-        // },
-
-        // // Example of remote MCP server authentication via Authorization header
-        // // https://github.com/github/github-mcp-server?tab=readme-ov-file#remote-github-mcp-server
-        // "github": {
-        //     // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
-        //     "type": "http",
-        //     "url": "https://api.githubcopilot.com/mcp/",
-        //     "headers": {
-        //         "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
-        //     }
-        // },
-
-        // // For remote MCP servers that require OAuth, consider using "mcp-remote"
-        // "notion": {
-        //     "command": "npx",
-        //     "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
-        // },
-    }
+    // // For remote MCP servers that require OAuth, consider using "mcp-remote"
+    // "notion": {
+    //   "command": "npx",
+    //   "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
+    // },
+  }
 }

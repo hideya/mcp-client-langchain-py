@@ -170,51 +170,59 @@ Create a `llm_mcp_config.json5` file:
   },
 
   "example_queries": [
-    "Tell me how LLMs work in a few sentences",
-    "Are there any weather alerts in California?",
-    "Read the news headlines on bbc.com",
-    // "Tell me about my GitHub profile"",
-    // "What's the news from Tokyo today?",
-    // "Open the webpage at bbc.com",
-    // "Tell me about my Notion account",
+    "Read and briefly summarize the LICENSE file in the current directory",
+    "Fetch the raw HTML content from bbc.com and tell me the titile",
+    // "Search for 'news in California' and show the first hit",
+    // "Tell me about my default GitHub profile",
+    // "Tell me about my default Notion account",
   ],
 
   "mcp_servers": {
     // Local MCP server that uses `npx`
-    "weather": {
+    // https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem
+    "filesystem": {
       "command": "npx",
-      "args": [ "-y", "@h1deya/mcp-server-weather" ]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."  // path to a directory to allow access to
+      ]
     },
 
-    // Another local server that uses `uvx`
+    // Local MCP server that uses `uvx`
+    // https://pypi.org/project/mcp-server-fetch/
     "fetch": {
       "command": "uvx",
-      "args": [ "mcp-server-fetch" ]
+      "args": [
+        "mcp-server-fetch"
+      ]
     },
 
-    // Embedding the value of an environment variable 
+    // Embedding the value of an environment variable
+    // https://www.npmjs.com/package/@modelcontextprotocol/server-brave-search
     "brave-search": {
       "command": "npx",
-      "args": [ "-y", "@modelcontextprotocol/server-brave-search" ],
-      "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      }
     },
 
-    // Remote MCP server via URL
-    // Auto-detection: tries Streamable HTTP first, falls back to SSE
-    "remote-mcp-server": {
-      "url": "https://api.example.com/..."
-    },
-
-    // Server with authentication
+    // Example of remote MCP server authentication via Authorization header
+    // https://github.com/github/github-mcp-server?tab=readme-ov-file#remote-github-mcp-server
     "github": {
-      "type": "http",  // recommended to specify the protocol explicitly when authentication is used
+      // To avoid auto protocol fallback, specify the protocol explicitly when using authentication
+      "type": "http",
       "url": "https://api.githubcopilot.com/mcp/",
       "headers": {
         "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
       }
     },
 
-    // For fMCP servers that require OAuth, consider using "mcp-remote"
+    // For remote MCP servers that require OAuth, consider using "mcp-remote"
     "notion": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
