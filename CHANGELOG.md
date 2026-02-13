@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Show model provider name together with model name in the console log
+- Fix a broken link in README.md
+
 
 ## [0.3.1] - 2026-02-13
 

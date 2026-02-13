@@ -345,7 +345,7 @@ async def init_react_agent(
     if system_prompt and isinstance(system_prompt, str):
         messages.append(SystemMessage(content=system_prompt))
 
-    return agent, llm, messages, mcp_cleanup, log_file_exit_stack
+    return agent, messages, mcp_cleanup, log_file_exit_stack
 
 
 async def run() -> None:
@@ -372,12 +372,13 @@ async def run() -> None:
             else []
         )
 
-        agent, llm, messages, mcp_cleanup, log_file_exit_stack = (
+        agent, messages, mcp_cleanup, log_file_exit_stack = (
             await init_react_agent(config, logger, args.log_dir)
         )
 
+        llm_config = config["llm"]
         print("\x1b[32m", end="")  # color to green
-        print("\nLLM model:", getattr(llm, 'model', getattr(llm, 'model_name', 'unknown')))
+        print(f"\nLLM model: {llm_config['provider']} / {llm_config['model']}")
         print("\x1b[0m", end="")  # reset the color
 
         await handle_conversation(
