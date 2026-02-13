@@ -8,7 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [0.3.1] - 2026-02-13
+
 ### Changed
+- Update README.md to show latest supported models
+- Use more explicit queries for github and notioin
 - Remove unnecessary dependency on websocket
 
 

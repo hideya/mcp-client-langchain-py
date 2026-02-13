@@ -21,7 +21,7 @@
     make install
     ```
 
-3. Create a `.env` file for API keys.
+3. Create a `.env` file for API keys
 
 4. Configure LLM and MCP Servers settings `llm_mcp_config.json5` as needed
 

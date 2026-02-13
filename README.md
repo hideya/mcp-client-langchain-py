@@ -45,12 +45,12 @@ A TypeScript equivalent of this utility is available [here](https://www.npmjs.co
   ```json5
   {
     "llm": {
-      "provider": "openai",       "model": "gpt-5-mini",
-      // "provider": "anthropic",    "model": "claude-haiku-4-5",
-      // "provider": "google_genai", "model": "gemini-2.5-flash",
-      // "provider": "xai",          "model": "grok-4-1-fast-non-reasoning",
-      // "provider": "cerebras",     "model": "gpt-oss-120b",
-      // "provider": "groq",         "model": "openai/gpt-oss-20b",
+      "provider": "openai",       "model": "gpt-5-mini"
+      // "provider": "anthropic",    "model": "claude-haiku-4-5"
+      // "provider": "google_genai", "model": "gemini-2.5-flash"
+      // "provider": "xai",          "model": "grok-4-1-fast-non-reasoning"
+      // "provider": "cerebras",     "model": "gpt-oss-120b"
+      // "provider": "groq",         "model": "openai/gpt-oss-20b"
     },
 
     "mcp_servers": {
@@ -69,7 +69,7 @@ A TypeScript equivalent of this utility is available [here](https://www.npmjs.co
 
 - Set up API keys
   ```bash
-  echo "ANTHROPIC_API_KEY=sk-ant-...                                       
+  echo "ANTHROPIC_API_KEY=sk-ant-...
   OPENAI_API_KEY=sk-proj-...
   GOOGLE_API_KEY=AI...
   XAI_API_KEY=xai-...
@@ -134,10 +134,10 @@ mcp-chat --help
 
 ## Supported Model/API Providers
 
-- **OpenAI**: `gpt-5-mini`, `gpt-4.1-nano`, etc.
-- **Anthropic**: `claude-sonnet-4-0`, `claude-3-5-haiku-latest`, etc.
-- **Google (GenAI)**: `gemini-2.5-flash`, `gemini-2.5-pro`, etc.
-- **xAI**: `grok-3-mini`, `grok-4`, etc.
+- **OpenAI**: `gpt-5-mini`, `gpt-5.2`, etc.
+- **Anthropic**: `claude-haiku-4-5`, `claude-3-5-haiku-latest`, etc.
+- **Google (GenAI)**: `gemini-2.5-flash`, `gemini-3-flash-preview`, etc.
+- **xAI**: `grok-3-mini`, `grok-4-1-fast-non-reasoning`, etc.
 - **Cerebras**: `gpt-oss-120b`, etc.
 - **Groq**: `openai/gpt-oss-20b`, `openai/gpt-oss-120b`, etc.
 
@@ -161,49 +161,32 @@ Create a `llm_mcp_config.json5` file:
 ```json5
 {
   "llm": {
-    // https://developers.openai.com/api/docs/pricing
     "provider": "openai",       "model": "gpt-5-mini"
-    // "provider": "openai",       "model": "gpt-5.2"
-
-    // https://platform.claude.com/docs/en/about-claude/models/overview
-    // "provider": "anthropic",    "model": "claude-3-5-haiku-latest"
     // "provider": "anthropic",    "model": "claude-haiku-4-5"
-
-    // https://ai.google.dev/gemini-api/docs/pricing
     // "provider": "google_genai", "model": "gemini-2.5-flash"
-    // "provider": "google_genai", "model": "gemini-3-flash-preview"
-
-    // https://docs.x.ai/developers/models
-    // "provider": "xai",          "model": "grok-3-mini"
     // "provider": "xai",          "model": "grok-4-1-fast-non-reasoning"
-
-    // https://inference-docs.cerebras.ai/models/overview
     // "provider": "cerebras",     "model": "gpt-oss-120b"
-
-    // https://groq.com/pricing
     // "provider": "groq",         "model": "openai/gpt-oss-20b"
   },
 
   "example_queries": [
-    "Read and briefly summarize the LICENSE file in the current directory",
-    "Fetch the raw HTML content from bbc.com and tell me the titile",
-    "Search for 'news in California' and show the first hit",
-    "Tell me about my default GitHub profile",
-    "Tell me about my default Notion account",
+    "Tell me how LLMs work in a few sentences",
+    "Are there any weather alerts in California?",
+    "Read the news headlines on bbc.com",
+    // "Tell me about my GitHub profile"",
+    // "What's the news from Tokyo today?",
+    // "Open the webpage at bbc.com",
+    // "Tell me about my Notion account",
   ],
 
   "mcp_servers": {
     // Local MCP server that uses `npx`
-    "filesystem": {
+    "weather": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "."  // path to a directory to allow access to
-      ]
+      "args": [ "-y", "@h1deya/mcp-server-weather" ]
     },
 
-    // Local server that uses `uvx`
+    // Another local server that uses `uvx`
     "fetch": {
       "command": "uvx",
       "args": [ "mcp-server-fetch" ]
@@ -216,7 +199,13 @@ Create a `llm_mcp_config.json5` file:
       "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
     },
 
-    // Remote MCP server with authentication
+    // Remote MCP server via URL
+    // Auto-detection: tries Streamable HTTP first, falls back to SSE
+    "remote-mcp-server": {
+      "url": "https://api.example.com/..."
+    },
+
+    // Server with authentication
     "github": {
       "type": "http",  // recommended to specify the protocol explicitly when authentication is used
       "url": "https://api.githubcopilot.com/mcp/",
@@ -225,7 +214,7 @@ Create a `llm_mcp_config.json5` file:
       }
     },
 
-    // For remote MCP servers that require OAuth, consider using "mcp-remote"
+    // For fMCP servers that require OAuth, consider using "mcp-remote"
     "notion": {
       "command": "npx",
       "args": ["-y", "mcp-remote", "https://mcp.notion.com/mcp"],
