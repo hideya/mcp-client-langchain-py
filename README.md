@@ -9,7 +9,7 @@ Suitable for testing MCP servers, exploring their capabilities, and prototyping 
 Internally it uses [LangChain Agent](https://docs.langchain.com/oss/python/langchain/agents) and
 a utility function `convert_mcp_to_langchain_tools()` from [`langchain_mcp_tools`](https://pypi.org/project/langchain-mcp-tools/).  
 
-A TypeScript equivalent of this utility is available [here](https://www.npmjs.com/package/@h1deya/mcp-try-cli)
+A TypeScript equivalent of this utility is available [here](https://www.npmjs.com/package/@h1deya/mcp-client-cli)
 
 ## Prerequisites
 
