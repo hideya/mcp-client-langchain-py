@@ -887,7 +887,7 @@ wheels = [
 
 [[package]]
 name = "langchain-mcp-tools"
-version = "0.3.0"
+version = "0.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsonschema-pydantic" },
@@ -895,9 +895,9 @@ dependencies = [
     { name = "langchain-core" },
     { name = "mcp" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/93/e3/fc810105865a5765b4cbe14f472e6c2252eab8d838e285dbe6fe59a06f2d/langchain_mcp_tools-0.3.0.tar.gz", hash = "sha256:f164de89f85e196dc4d85ba8a7763bbe814d59d040874b249eeec0d3b490d828", size = 27990, upload-time = "2026-02-11T06:35:31.86Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/04/e4/668b7cda0109f5325d7f4ea55896ccb70328c4cda52845dfd9278cc8fca2/langchain_mcp_tools-0.3.3.tar.gz", hash = "sha256:1a3b3ce86e4651983508d626c1f2adc80029eb9a66dad32673aa38d5905b8a43", size = 28777, upload-time = "2026-03-28T03:53:37.121Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d7/3a/54d87b3d683a4825c6c80aad3935c209512b49852b33d673ccbb029887f4/langchain_mcp_tools-0.3.0-py3-none-any.whl", hash = "sha256:4475bc4a6107872e20a1641722bf52fae1a14ee128ec85f43f28ba0d312eaf9f", size = 23750, upload-time = "2026-02-11T06:35:29.795Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/7d/1e093a543925f55f3c0c59a48870c3f216bf8ee559e89bfbd72d445cf211/langchain_mcp_tools-0.3.3-py3-none-any.whl", hash = "sha256:a0f5bd5a95ad0549c4cfdb881be20d4383fcfafa5e674abad1a1a542a3fa41db", size = 24262, upload-time = "2026-03-28T03:53:35.587Z" },
 ]
 
 [[package]]
@@ -1032,7 +1032,7 @@ wheels = [
 
 [[package]]
 name = "mcp-chat"
-version = "0.3.2"
+version = "0.3.3"
 source = { editable = "." }
 dependencies = [
     { name = "langchain" },
@@ -1054,7 +1054,7 @@ requires-dist = [
     { name = "langchain-cerebras", specifier = ">=0.8.2" },
     { name = "langchain-google-genai", specifier = ">=4.2.0" },
     { name = "langchain-groq", specifier = ">=1.1.2" },
-    { name = "langchain-mcp-tools", specifier = ">=0.3.0" },
+    { name = "langchain-mcp-tools", specifier = ">=0.3.3" },
     { name = "langchain-openai", specifier = ">=1.1.8" },
     { name = "langchain-xai", specifier = ">=1.2.2" },
     { name = "pyjson5", specifier = ">=1.6.8" },

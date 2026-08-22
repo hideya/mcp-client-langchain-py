@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## [Unreleased]
+## [0.3.3] - 2026-03-28
+
+### Changed
+- Update to use langchain-mcp-tools 0.3.3
+- Updated the example to include latest models, including gpt-5.4-mini,
+  claude-sonnet-4-6, and gemini-3.1-flash-lite-preview
+- Refine prompts in the example for more successful execution of MCP servers
 
 
 ## [0.3.2] - 2026-02-13
