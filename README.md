@@ -11,10 +11,6 @@ which currently supports **MCP Protocol version 2025-03-26**.
 
 It does **not** support the MCP **2026-07-28** specification.
 
-For new MCP integrations with LangChain, consider using
-[LangChain's official LangChain MCP Adapters library](https://pypi.org/project/langchain-mcp-adapters/)
-directly.
-
 ## Introduction
 
 A simple, text-based CLI client for [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers built with LangChain and Python.  
