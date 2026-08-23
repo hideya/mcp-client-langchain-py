@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.3.4] - 2026-08-23
+
+### Changed
+- Documentation-only release
+- Clarify that this utility is based on `langchain-mcp-tools`,
+  which supports MCP Protocol version 2025-03-26 and does not support
+  the MCP 2026-07-28 specification
+
+
 ## [0.3.3] - 2026-03-28
 
 ### Changed

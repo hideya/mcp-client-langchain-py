@@ -3,6 +3,20 @@
 
 **Quickly test and explore MCP servers from the command line!**
 
+## Project Status
+
+This utility is based on
+[`langchain-mcp-tools`](https://pypi.org/project/langchain-mcp-tools/),
+which currently supports **MCP Protocol version 2025-03-26**.
+
+It does **not** support the MCP **2026-07-28** specification.
+
+For new MCP integrations with LangChain, consider using
+[LangChain's official LangChain MCP Adapters library](https://pypi.org/project/langchain-mcp-adapters/)
+directly.
+
+## Introduction
+
 A simple, text-based CLI client for [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers built with LangChain and Python.  
 Suitable for testing MCP servers, exploring their capabilities, and prototyping integrations.
 
